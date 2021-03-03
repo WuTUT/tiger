@@ -12,10 +12,8 @@ import parser.Parser;
 import control.CommandLine;
 import control.Control;
 
-public class Tiger
-{
-  public static void main(String[] args)
-  {
+public class Tiger {
+  public static void main(String[] args) {
     InputStream fstream;
     Parser parser;
 
@@ -48,7 +46,6 @@ public class Tiger
         fstream = new BufferedInputStream(new FileInputStream(fname));
         Lexer lexer = new Lexer(fname, fstream);
         Token token = lexer.nextToken();
-
         while (token.kind != Token.Kind.TOKEN_EOF) {
           System.out.println(token.toString());
           token = lexer.nextToken();
@@ -76,17 +73,17 @@ public class Tiger
       e.printStackTrace();
       System.exit(1);
     }
-    
+
     // pretty printing the AST, if necessary
     if (dumpAst) {
       ast.PrettyPrintVisitor pp = new ast.PrettyPrintVisitor();
       theAst.accept(pp);
     }
-    
+
     // elaborate the AST, report all possible errors.
     elaborator.ElaboratorVisitor elab = new elaborator.ElaboratorVisitor();
     theAst.accept(elab);
-    
+
     return;
   }
 }
