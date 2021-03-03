@@ -72,6 +72,7 @@ public class Tiger {
       e.printStackTrace();
       System.exit(1);
     }
+    System.out.println("file parse finished.");
     return;
   }
 }

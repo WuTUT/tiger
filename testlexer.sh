@@ -6,14 +6,19 @@ echo "check java version is: $check_java_version"
 
 files=`ls test | grep .java`
 #echo $files
-
+check_lexer=false
 for file in $files
 do
     echo "./test/$file"
-    output=`java -cp bin Tiger "./test/$file" -testlexer`
-    #echo "$output"
-    noneout=`echo "$output" | grep TOKEN_MAIN`    
-    echo "$noneout"
+    if [ "$check_lexer" = true ]
+    then
+        output=`java -cp bin Tiger "./test/$file" -testlexer`
+        noneout=`echo "$output" | grep TOKEN_MAIN`    
+        echo "$noneout"
+    else
+        output=`java -cp bin Tiger "./test/$file"`
+        echo "$output"
+    fi
     echo "------------------------------"
 done
 echo ===========
