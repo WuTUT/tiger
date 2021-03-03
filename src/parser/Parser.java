@@ -1,6 +1,31 @@
 package parser;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+
+import ast.Ast.Dec;
+import ast.Ast.Exp;
+import ast.Ast.Exp.Call;
+import ast.Ast.Exp.Id;
+import ast.Ast.Exp.Lt;
+import ast.Ast.Exp.NewObject;
+import ast.Ast.Exp.Num;
+import ast.Ast.Exp.Sub;
+import ast.Ast.Exp.Add;
+import ast.Ast.Exp.This;
+import ast.Ast.Exp.Times;
+import ast.Ast.MainClass;
+import ast.Ast.MainClass.MainClassSingle;
+import ast.Ast.Method;
+import ast.Ast.Program;
+import ast.Ast.Program.ProgramSingle;
+import ast.Ast.Stm;
+import ast.Ast.Stm.Assign;
+import ast.Ast.Stm.If;
+import ast.Ast.Stm.Print;
+import ast.Ast.Stm.While;
+import ast.Ast.Type;
+import ast.Ast.Stm.Block;
 
 import lexer.Lexer;
 import lexer.Token;
@@ -415,7 +440,7 @@ public class Parser {
   // Statement
   // }
   // }
-  private void parseMainClass() {
+  private ast.Ast.MainClass.T parseMainClass() {
     // Lab1. Exercise 4: Fill in the missing code
     // to parse a main class as described by the
     // grammar above.
@@ -441,15 +466,15 @@ public class Parser {
   }
 
   // Program -> MainClass ClassDecl*
-  private void parseProgram() {
-    parseMainClass();
-    parseClassDecls();
+  private Program.T parseProgram() {
+    MainClass.T mainClass = parseMainClass();
+    LinkedList<ast.Ast.Class.T> classes = parseClassDecls();
     eatToken(Kind.TOKEN_EOF);
-    return;
+    return new Program.ProgramSingle(mainClass, classes);
   }
 
-  public void parse() {
-    parseProgram();
-    return;
+  public Program.T parse() {
+    return parseProgram();
+
   }
 }
