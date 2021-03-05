@@ -11,7 +11,7 @@
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["./test/BinarySearch.java"], 
+            "args": ["./test/TreeVisitor.java","-dump","ast"], 
         },
         {
             "type": "java",
@@ -19,7 +19,7 @@
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["./test/BinarySearch.java", "-testlexer"],
+            "args": ["./test/LinkedList.java", "-dump","ast"],
         }
     ]
 }

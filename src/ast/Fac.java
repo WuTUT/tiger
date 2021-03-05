@@ -82,4 +82,6 @@ public class Fac {
                                         new Id("sum"))
 
                         ));
+        public static Program.T sumprog = new ProgramSingle(sum, new util.Flist<ast.Ast.Class.T>().list(doit));
+
 }

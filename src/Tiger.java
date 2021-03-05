@@ -29,6 +29,8 @@ public class Tiger {
       ast.PrettyPrintVisitor pp = new ast.PrettyPrintVisitor();
       ast.Fac.prog.accept(pp);
       System.out.println("Testing the Tiger compiler on Fac.java finished.");
+      ast.Fac.sumprog.accept(pp);
+
       System.exit(1);
     }
 

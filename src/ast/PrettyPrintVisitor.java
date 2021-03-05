@@ -35,94 +35,101 @@ import ast.Ast.Type.ClassType;
 import ast.Ast.Type.Int;
 import ast.Ast.Type.IntArray;
 
-public class PrettyPrintVisitor implements Visitor
-{
+public class PrettyPrintVisitor implements Visitor {
   private int indentLevel;
 
-  public PrettyPrintVisitor()
-  {
+  public PrettyPrintVisitor() {
     this.indentLevel = 4;
   }
 
-  private void indent()
-  {
+  private void indent() {
     this.indentLevel += 2;
   }
 
-  private void unIndent()
-  {
+  private void unIndent() {
     this.indentLevel -= 2;
   }
 
-  private void printSpaces()
-  {
+  private boolean isPrintBrackets(Exp.T e) {
+    if (e instanceof Exp.And || e instanceof Exp.Lt)
+      return true;
+    return false;
+
+  }
+
+  private void printSpaces() {
     int i = this.indentLevel;
     while (i-- != 0)
       this.say(" ");
   }
 
-  private void sayln(String s)
-  {
+  private void sayln(String s) {
     System.out.println(s);
   }
 
-  private void say(String s)
-  {
+  private void say(String s) {
     System.out.print(s);
   }
 
   // /////////////////////////////////////////////////////
   // expressions
   @Override
-  public void visit(Add e)
-  {
+  public void visit(Add e) {
     // Lab2, exercise4: filling in missing code.
     // Similar for other methods with empty bodies.
     // Your code here:
+    e.left.accept(this);
+    this.say(" + ");
+    e.right.accept(this);
+
   }
 
   @Override
-  public void visit(And e)
-  {
+  public void visit(And e) {
+    e.left.accept(this);
+    this.say(" && ");
+    e.right.accept(this);
   }
 
   @Override
-  public void visit(ArraySelect e)
-  {
+  public void visit(ArraySelect e) {
+    e.array.accept(this);
+    this.say("[");
+    e.index.accept(this);
+    this.say("]");
   }
 
   @Override
-  public void visit(Call e)
-  {
+  public void visit(Call e) {
     e.exp.accept(this);
     this.say("." + e.id + "(");
     for (Exp.T x : e.args) {
       x.accept(this);
-      this.say(", ");
+      if (x != e.args.getLast())
+        this.say(", ");
     }
     this.say(")");
     return;
   }
 
   @Override
-  public void visit(False e)
-  {
+  public void visit(False e) {
+    this.say("false");
   }
 
   @Override
-  public void visit(Id e)
-  {
+  public void visit(Id e) {
     this.say(e.id);
   }
 
   @Override
-  public void visit(Length e)
-  {
+  public void visit(Length e) {
+    e.array.accept(this);
+    this.say(".length");
   }
 
   @Override
-  public void visit(Lt e)
-  {
+  public void visit(Lt e) {
     e.left.accept(this);
     this.say(" < ");
     e.right.accept(this);
@@ -130,32 +137,37 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(NewIntArray e)
-  {
+  public void visit(NewIntArray e) {
+    this.say("new int[");
+    e.exp.accept(this);
+    this.say("]");
   }
 
   @Override
-  public void visit(NewObject e)
-  {
+  public void visit(NewObject e) {
     this.say("new " + e.id + "()");
     return;
   }
 
   @Override
-  public void visit(Not e)
-  {
+  public void visit(Not e) {
+    this.say("!");
+    if (isPrintBrackets(e.exp)) {
+      this.say("(");
+      e.exp.accept(this);
+      this.say(")");
+    } else
+      e.exp.accept(this);
   }
 
   @Override
-  public void visit(Num e)
-  {
+  public void visit(Num e) {
     System.out.print(e.num);
     return;
   }
 
   @Override
-  public void visit(Sub e)
-  {
+  public void visit(Sub e) {
     e.left.accept(this);
     this.say(" - ");
     e.right.accept(this);
@@ -163,14 +175,12 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(This e)
-  {
+  public void visit(This e) {
     this.say("this");
   }
 
   @Override
-  public void visit(Times e)
-  {
+  public void visit(Times e) {
     e.left.accept(this);
     this.say(" * ");
     e.right.accept(this);
@@ -178,105 +188,128 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(True e)
-  {
+  public void visit(True e) {
+    this.say("true");
   }
 
   // statements
   @Override
-  public void visit(Assign s)
-  {
+  public void visit(Assign s) {
     this.printSpaces();
     this.say(s.id + " = ");
     s.exp.accept(this);
-    this.say(";");
+    this.sayln(";");
     return;
   }
 
   @Override
-  public void visit(AssignArray s)
-  {
+  public void visit(AssignArray s) {
+    this.printSpaces();
+    this.say(s.id + "[");
+    s.index.accept(this);
+    this.say("] = ");
+    s.exp.accept(this);
+    this.sayln(";");
   }
 
   @Override
-  public void visit(Block s)
-  {
+  public void visit(Block s) {
+    this.printSpaces();
+    this.sayln("{");
+    this.indent();
+    for (Stm.T stm : s.stms) {
+      stm.accept(this);
+    }
+    this.unIndent();
+    this.printSpaces();
+    this.sayln("}");
   }
 
   @Override
-  public void visit(If s)
-  {
+  public void visit(If s) {
     this.printSpaces();
     this.say("if (");
     s.condition.accept(this);
     this.sayln(")");
-    this.indent();
+    if (!(s.thenn instanceof Stm.Block))
+      this.indent();
     s.thenn.accept(this);
-    this.unIndent();
+    if (!(s.thenn instanceof Stm.Block))
+      this.unIndent();
     this.sayln("");
     this.printSpaces();
     this.sayln("else");
-    this.indent();
+    if (!(s.elsee instanceof Stm.Block) && !(s.elsee instanceof Stm.If))
+      this.indent();
     s.elsee.accept(this);
+    if (!(s.elsee instanceof Stm.Block) && !(s.elsee instanceof Stm.If))
+      this.unIndent();
     this.sayln("");
-    this.unIndent();
     return;
   }
 
   @Override
-  public void visit(Print s)
-  {
+  public void visit(Print s) {
     this.printSpaces();
-    this.say("System.out.println (");
+    this.say("System.out.println(");
     s.exp.accept(this);
     this.sayln(");");
     return;
   }
 
   @Override
-  public void visit(While s)
-  {
+  public void visit(While s) {
+    this.printSpaces();
+    this.say("while (");
+    s.condition.accept(this);
+    this.sayln(")");
+
+    s.body.accept(this);
+
   }
 
   // type
   @Override
-  public void visit(Boolean t)
-  {
+  public void visit(Boolean t) {
+    this.say("boolean");
   }
 
   @Override
-  public void visit(ClassType t)
-  {
+  public void visit(ClassType t) {
+    this.say(t.id);
   }
 
   @Override
-  public void visit(Int t)
-  {
+  public void visit(Int t) {
     this.say("int");
   }
 
   @Override
-  public void visit(IntArray t)
-  {
+  public void visit(IntArray t) {
+    this.say("int[]");
   }
 
   // dec
   @Override
-  public void visit(Dec.DecSingle d)
-  {
+  public void visit(Dec.DecSingle d) {
+    d.type.accept(this);
+    this.sayln(" " + d.id);
   }
 
   // method
   @Override
-  public void visit(MethodSingle m)
-  {
+  public void visit(MethodSingle m) {
     this.say("  public ");
     m.retType.accept(this);
     this.say(" " + m.id + "(");
+
     for (Dec.T d : m.formals) {
       Dec.DecSingle dec = (Dec.DecSingle) d;
       dec.type.accept(this);
-      this.say(" " + dec.id + ", ");
+      this.say(" " + dec.id);
+      if (m.formals.getLast() != d) {
+        this.say(", ");
+      }
     }
     this.sayln(")");
     this.sayln("  {");
@@ -299,8 +332,7 @@ public class PrettyPrintVisitor implements Visitor
 
   // class
   @Override
-  public void visit(ClassSingle c)
-  {
+  public void visit(ClassSingle c) {
     this.say("class " + c.id);
     if (c.extendss != null)
       this.sayln(" extends " + c.extendss);
@@ -324,11 +356,10 @@ public class PrettyPrintVisitor implements Visitor
 
   // main class
   @Override
-  public void visit(MainClass.MainClassSingle c)
-  {
+  public void visit(MainClass.MainClassSingle c) {
     this.sayln("class " + c.id);
     this.sayln("{");
-    this.sayln("  public static void main (String [] " + c.arg + ")");
+    this.sayln("  public static void main(String[] " + c.arg + ")");
     this.sayln("  {");
     c.stm.accept(this);
     this.sayln("  }");
@@ -338,8 +369,7 @@ public class PrettyPrintVisitor implements Visitor
 
   // program
   @Override
-  public void visit(Program.ProgramSingle p)
-  {
+  public void visit(Program.ProgramSingle p) {
     p.mainClass.accept(this);
     this.sayln("");
     for (ast.Ast.Class.T classs : p.classes) {
