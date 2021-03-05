@@ -50,7 +50,7 @@ public class PrettyPrintVisitor implements Visitor {
     this.indentLevel -= 2;
   }
 
-  private boolean isPrintBrackets(Exp.T e) {
+  private boolean isNotPrintBrackets(Exp.T e) {
     if (e instanceof Exp.And || e instanceof Exp.Lt)
       return true;
     return false;
@@ -101,7 +101,13 @@ public class PrettyPrintVisitor implements Visitor {
 
   @Override
   public void visit(Call e) {
+    if (e.exp instanceof Exp.Call) {
+      this.say("(");
+    }
     e.exp.accept(this);
+    if (e.exp instanceof Exp.Call) {
+      this.say(")");
+    }
     this.say("." + e.id + "(");
     for (Exp.T x : e.args) {
       x.accept(this);
@@ -128,11 +134,31 @@ public class PrettyPrintVisitor implements Visitor {
     this.say(".length");
   }
 
+  private boolean isLtPrintBrackets(Exp.T e) {
+    if (e instanceof Exp.Sub || e instanceof Exp.Times || e instanceof Exp.Add) {
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public void visit(Lt e) {
+    if (isLtPrintBrackets(e.left)) {
+      this.say("(");
+    }
     e.left.accept(this);
+    if (isLtPrintBrackets(e.left)) {
+      this.say(")");
+    }
     this.say(" < ");
+
+    if (isLtPrintBrackets(e.right)) {
+      this.say("(");
+    }
     e.right.accept(this);
+    if (isLtPrintBrackets(e.right)) {
+      this.say(")");
+    }
     return;
   }
 
@@ -152,7 +178,7 @@ public class PrettyPrintVisitor implements Visitor {
   @Override
   public void visit(Not e) {
     this.say("!");
-    if (isPrintBrackets(e.exp)) {
+    if (isNotPrintBrackets(e.exp)) {
       this.say("(");
       e.exp.accept(this);
       this.say(")");
@@ -179,11 +205,31 @@ public class PrettyPrintVisitor implements Visitor {
     this.say("this");
   }
 
+  private boolean isTimesPrintBrackets(Exp.T e) {
+    if (e instanceof Exp.Add || e instanceof Exp.Sub) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   @Override
   public void visit(Times e) {
+    if (isTimesPrintBrackets(e.left)) {
+      this.say("(");
+    }
     e.left.accept(this);
+    if (isTimesPrintBrackets(e.left)) {
+      this.say(")");
+    }
     this.say(" * ");
+    if (isTimesPrintBrackets(e.right)) {
+      this.say("(");
+    }
     e.right.accept(this);
+    if (isTimesPrintBrackets(e.right)) {
+      this.say(")");
+    }
     return;
   }
 
@@ -263,8 +309,11 @@ public class PrettyPrintVisitor implements Visitor {
     this.say("while (");
     s.condition.accept(this);
     this.sayln(")");
-
+    if (!(s.body instanceof Stm.Block))
+      this.indent();
     s.body.accept(this);
+    if (!(s.body instanceof Stm.Block))
+      this.unIndent();
 
   }
 
