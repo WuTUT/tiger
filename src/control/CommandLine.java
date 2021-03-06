@@ -136,52 +136,52 @@ public class CommandLine {
         found = true;
         String theArg = null;
         switch (arg.kind) {
-          case Empty:
-            arg.action.f(null);
-            break;
-          default:
-            if (i >= cargs.length - 1) {
-              System.out.println("Error: " + cargs[i] + ": requires an argument");
-              this.output();
-              System.exit(1);
-            }
-            i++;
-            break;
+        case Empty:
+          arg.action.f(null);
+          break;
+        default:
+          if (i >= cargs.length - 1) {
+            System.out.println("Error: " + cargs[i] + ": requires an argument");
+            this.output();
+            System.exit(1);
+          }
+          i++;
+          break;
         }
 
         theArg = cargs[i];
         switch (arg.kind) {
-          case Bool:
-            if (theArg.equals("true"))
-              arg.action.f(new Boolean(true));
-            else if (theArg.equals("false"))
-              arg.action.f(new Boolean(false));
-            else {
-              System.out.println("Error: " + arg.name + ": requires a boolean");
-              this.output();
-              System.exit(1);
-            }
-            break;
-          case Int:
-            int num = 0;
-            try {
-              num = Integer.parseInt(theArg);
-            } catch (java.lang.NumberFormatException e) {
-              System.out.println("Error: " + arg.name + ": requires an integer");
-              this.output();
-              System.exit(1);
-            }
-            arg.action.f(num);
-            break;
-          case String:
-            arg.action.f(theArg);
-            break;
-          case StringList:
-            String[] strArray = theArg.split(",");
-            arg.action.f(strArray);
-            break;
-          default:
-            break;
+        case Bool:
+          if (theArg.equals("true"))
+            arg.action.f(new Boolean(true));
+          else if (theArg.equals("false"))
+            arg.action.f(new Boolean(false));
+          else {
+            System.out.println("Error: " + arg.name + ": requires a boolean");
+            this.output();
+            System.exit(1);
+          }
+          break;
+        case Int:
+          int num = 0;
+          try {
+            num = Integer.parseInt(theArg);
+          } catch (java.lang.NumberFormatException e) {
+            System.out.println("Error: " + arg.name + ": requires an integer");
+            this.output();
+            System.exit(1);
+          }
+          arg.action.f(num);
+          break;
+        case String:
+          arg.action.f(theArg);
+          break;
+        case StringList:
+          String[] strArray = theArg.split(",");
+          arg.action.f(strArray);
+          break;
+        default:
+          break;
         }
         break;
       }

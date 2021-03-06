@@ -4,7 +4,6 @@ import java.util.LinkedList;
 
 import ast.Ast.Dec;
 import ast.Ast.Type;
-import util.Todo;
 
 public class MethodTable {
   private java.util.Hashtable<String, Type.T> table;

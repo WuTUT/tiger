@@ -1,7 +1,6 @@
 package elaborator;
 
 import ast.Ast.Type;
-import util.Todo;
 
 public class ClassTable {
   // map each class name (a string), to the class bindings.
@@ -78,7 +77,6 @@ public class ClassTable {
     for (String className : table.keySet()) {
       System.out.print("   ");
       System.out.println(className);
-      ClassBinding cb = table.get(className);
     }
     System.out.println("Class Names List OK");
   }

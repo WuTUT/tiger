@@ -1,6 +1,5 @@
 package elaborator;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import ast.Ast.Class;

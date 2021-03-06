@@ -12,7 +12,6 @@ import slp.Slp.Exp.Op;
 import slp.Slp.ExpList;
 import slp.Slp.Stm;
 import util.Bug;
-import util.Todo;
 import control.Control;
 
 public class Main {
@@ -72,16 +71,16 @@ public class Main {
     } else if (exp instanceof Exp.Op) {
       Exp.Op op = (Exp.Op) exp;
       switch (op.op) {
-        case ADD:
-          return interpExp(op.left) + interpExp(op.right);
-        case SUB:
-          return interpExp(op.left) - interpExp(op.right);
-        case TIMES:
-          return interpExp(op.left) * interpExp(op.right);
-        case DIVIDE:
-          return interpExp(op.left) / interpExp(op.right);
-        default:
-          new Bug();
+      case ADD:
+        return interpExp(op.left) + interpExp(op.right);
+      case SUB:
+        return interpExp(op.left) - interpExp(op.right);
+      case TIMES:
+        return interpExp(op.left) * interpExp(op.right);
+      case DIVIDE:
+        return interpExp(op.left) / interpExp(op.right);
+      default:
+        new Bug();
       }
     } else if (exp instanceof Exp.Eseq) {
       Exp.Eseq eseq = (Exp.Eseq) exp;
@@ -148,40 +147,40 @@ public class Main {
       Exp.OP_T op = e.op;
 
       switch (op) {
-        case ADD:
-          compileExp(left);
-          emit("\tpushl\t%eax\n");
-          compileExp(right);
-          emit("\tpopl\t%edx\n");
-          emit("\taddl\t%edx, %eax\n");
-          break;
-        case SUB:
-          compileExp(left);
-          emit("\tpushl\t%eax\n");
-          compileExp(right);
-          emit("\tpopl\t%edx\n");
-          emit("\tsubl\t%eax, %edx\n");
-          emit("\tmovl\t%edx, %eax\n");
-          break;
-        case TIMES:
-          compileExp(left);
-          emit("\tpushl\t%eax\n");
-          compileExp(right);
-          emit("\tpopl\t%edx\n");
-          emit("\timul\t%edx\n");
-          break;
-        case DIVIDE:
-          compileExp(left);
-          emit("\tpushl\t%eax\n");
-          compileExp(right);
-          emit("\tpopl\t%edx\n");
-          emit("\tmovl\t%eax, %ecx\n");
-          emit("\tmovl\t%edx, %eax\n");
-          emit("\tcltd\n");
-          emit("\tdiv\t%ecx\n");
-          break;
-        default:
-          new Bug();
+      case ADD:
+        compileExp(left);
+        emit("\tpushl\t%eax\n");
+        compileExp(right);
+        emit("\tpopl\t%edx\n");
+        emit("\taddl\t%edx, %eax\n");
+        break;
+      case SUB:
+        compileExp(left);
+        emit("\tpushl\t%eax\n");
+        compileExp(right);
+        emit("\tpopl\t%edx\n");
+        emit("\tsubl\t%eax, %edx\n");
+        emit("\tmovl\t%edx, %eax\n");
+        break;
+      case TIMES:
+        compileExp(left);
+        emit("\tpushl\t%eax\n");
+        compileExp(right);
+        emit("\tpopl\t%edx\n");
+        emit("\timul\t%edx\n");
+        break;
+      case DIVIDE:
+        compileExp(left);
+        emit("\tpushl\t%eax\n");
+        compileExp(right);
+        emit("\tpopl\t%edx\n");
+        emit("\tmovl\t%eax, %ecx\n");
+        emit("\tmovl\t%edx, %eax\n");
+        emit("\tcltd\n");
+        emit("\tdiv\t%ecx\n");
+        break;
+      default:
+        new Bug();
       }
     } else if (exp instanceof Eseq) {
       Eseq e = (Eseq) exp;

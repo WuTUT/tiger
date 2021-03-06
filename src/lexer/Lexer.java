@@ -6,7 +6,6 @@ import java.io.InputStream;
 
 import lexer.Token.Kind;
 import util.Bug;
-import util.Todo;
 
 import java.util.HashMap;
 import java.util.regex.Pattern;
@@ -95,85 +94,85 @@ public class Lexer {
       }
     }
     switch (c) {
-      case '+':
-        return new Token(Kind.TOKEN_ADD, lineNum);
-      case '&':
-        this.fstream.mark(1);
-        int c2 = this.fstream.read();
-        if (c2 == '&') {
-          return new Token(Kind.TOKEN_AND, lineNum);
-        } else {
-          this.fstream.reset();
-          new Bug();
-        }
-      case '=':
-        return new Token(Kind.TOKEN_ASSIGN, lineNum);
-      case ',':
-        return new Token(Kind.TOKEN_COMMER, lineNum);
-      case '.':
-        return new Token(Kind.TOKEN_DOT, lineNum);
-      case '-':
-        return new Token(Kind.TOKEN_SUB, lineNum);
-      case '*':
-        return new Token(Kind.TOKEN_TIMES, lineNum);
-      case '!':
-        return new Token(Kind.TOKEN_NOT, lineNum);
-      case '<':
-        return new Token(Kind.TOKEN_LT, lineNum);
-      case '{':
-        return new Token(Kind.TOKEN_LBRACE, lineNum);
-      case '[':
-        return new Token(Kind.TOKEN_LBRACK, lineNum);
-      case '(':
-        return new Token(Kind.TOKEN_LPAREN, lineNum);
-      case '}':
-        return new Token(Kind.TOKEN_RBRACE, lineNum);
-      case ']':
-        return new Token(Kind.TOKEN_RBRACK, lineNum);
-      case ')':
-        return new Token(Kind.TOKEN_RPAREN, lineNum);
-      case ';':
-        return new Token(Kind.TOKEN_SEMI, lineNum);
-      default:
-        // Lab 1, exercise 2: supply missing code to
-        // lex other kinds of tokens.
-        // Hint: think carefully about the basic
-        // data structure and algorithms. The code
-        // is not that much and may be less than 50 lines. If you
-        // find you are writing a lot of code, you
-        // are on the wrong way.
+    case '+':
+      return new Token(Kind.TOKEN_ADD, lineNum);
+    case '&':
+      this.fstream.mark(1);
+      int c2 = this.fstream.read();
+      if (c2 == '&') {
+        return new Token(Kind.TOKEN_AND, lineNum);
+      } else {
+        this.fstream.reset();
+        new Bug();
+      }
+    case '=':
+      return new Token(Kind.TOKEN_ASSIGN, lineNum);
+    case ',':
+      return new Token(Kind.TOKEN_COMMER, lineNum);
+    case '.':
+      return new Token(Kind.TOKEN_DOT, lineNum);
+    case '-':
+      return new Token(Kind.TOKEN_SUB, lineNum);
+    case '*':
+      return new Token(Kind.TOKEN_TIMES, lineNum);
+    case '!':
+      return new Token(Kind.TOKEN_NOT, lineNum);
+    case '<':
+      return new Token(Kind.TOKEN_LT, lineNum);
+    case '{':
+      return new Token(Kind.TOKEN_LBRACE, lineNum);
+    case '[':
+      return new Token(Kind.TOKEN_LBRACK, lineNum);
+    case '(':
+      return new Token(Kind.TOKEN_LPAREN, lineNum);
+    case '}':
+      return new Token(Kind.TOKEN_RBRACE, lineNum);
+    case ']':
+      return new Token(Kind.TOKEN_RBRACK, lineNum);
+    case ')':
+      return new Token(Kind.TOKEN_RPAREN, lineNum);
+    case ';':
+      return new Token(Kind.TOKEN_SEMI, lineNum);
+    default:
+      // Lab 1, exercise 2: supply missing code to
+      // lex other kinds of tokens.
+      // Hint: think carefully about the basic
+      // data structure and algorithms. The code
+      // is not that much and may be less than 50 lines. If you
+      // find you are writing a lot of code, you
+      // are on the wrong way.
 
-        // new Todo();
-        if (Character.isDigit((char) c)) {
-          StringBuffer numBuf = new StringBuffer();
+      // new Todo();
+      if (Character.isDigit((char) c)) {
+        StringBuffer numBuf = new StringBuffer();
+        numBuf.append((char) c);
+        this.fstream.mark(1);
+        c = this.fstream.read();
+        while (Character.isDigit((char) c)) {
           numBuf.append((char) c);
           this.fstream.mark(1);
           c = this.fstream.read();
-          while (Character.isDigit((char) c)) {
-            numBuf.append((char) c);
-            this.fstream.mark(1);
-            c = this.fstream.read();
-          }
-          this.fstream.reset();
-          return new Token(Kind.TOKEN_NUM, lineNum, numBuf.toString());
-        } else if (Character.isJavaIdentifierStart(c)) {
-          StringBuffer idBuf = new StringBuffer();
+        }
+        this.fstream.reset();
+        return new Token(Kind.TOKEN_NUM, lineNum, numBuf.toString());
+      } else if (Character.isJavaIdentifierStart(c)) {
+        StringBuffer idBuf = new StringBuffer();
+        idBuf.append((char) c);
+        this.fstream.mark(1);
+        c = this.fstream.read();
+        while (Character.isJavaIdentifierPart((char) c)) {
           idBuf.append((char) c);
           this.fstream.mark(1);
           c = this.fstream.read();
-          while (Character.isJavaIdentifierPart((char) c)) {
-            idBuf.append((char) c);
-            this.fstream.mark(1);
-            c = this.fstream.read();
-          }
-          this.fstream.reset();
-          String id = idBuf.toString();
-          // System.out.println(id);
-          if (reserveID.containsKey(id))
-            return new Token(reserveID.get(id), lineNum);
-          return new Token(Kind.TOKEN_ID, lineNum, id);
         }
-        return null;
+        this.fstream.reset();
+        String id = idBuf.toString();
+        // System.out.println(id);
+        if (reserveID.containsKey(id))
+          return new Token(reserveID.get(id), lineNum);
+        return new Token(Kind.TOKEN_ID, lineNum, id);
+      }
+      return null;
     }
   }
 
