@@ -38,24 +38,34 @@ public class Fac {
          * ComputeFac(int num) { int num_aux; if (num < 1) num_aux = 1; else num_aux =
          * num * (this.ComputeFac(num-1)); return num_aux; } }
          */
-
+        static int lineNum = 0;
         // // main class: "Factorial"
-        static MainClass.T factorial = new MainClassSingle("Factorial", "a", new Print(
-                        new Call(new NewObject("Fac"), "ComputeFac", new util.Flist<Exp.T>().list(new Num(10)))));
+        static MainClass.T factorial = new MainClassSingle("Factorial", "a",
+                        new Print(new Call(new NewObject("Fac", lineNum), "ComputeFac",
+                                        new util.Flist<Exp.T>().list(new Num(10, lineNum)), lineNum), lineNum),
+                        lineNum);
 
         // // class "Fac"
         static ast.Ast.Class.T fac = new ast.Ast.Class.ClassSingle("Fac", null, new util.Flist<Dec.T>().list(),
                         new util.Flist<Method.T>().list(new Method.MethodSingle(new Type.Int(), "ComputeFac",
-                                        new util.Flist<Dec.T>().list(new Dec.DecSingle(new Type.Int(), "num")),
-                                        new util.Flist<Dec.T>().list(new Dec.DecSingle(new Type.Int(), "num_aux")),
-                                        new util.Flist<Stm.T>().list(new If(new Lt(new Id("num"), new Num(1)),
-                                                        new Assign("num_aux", new Num(1)),
-                                                        new Assign("num_aux", new Times(new Id("num"), new Call(
-                                                                        new This(), "ComputeFac",
-                                                                        new util.Flist<Exp.T>().list(new Sub(
-                                                                                        new Id("num"),
-                                                                                        new Num(1)))))))),
-                                        new Id("num_aux"))));
+                                        new util.Flist<Dec.T>().list(new Dec.DecSingle(new Type.Int(), "num", lineNum)),
+                                        new util.Flist<Dec.T>()
+                                                        .list(new Dec.DecSingle(new Type.Int(), "num_aux", lineNum)),
+                                        new util.Flist<Stm.T>().list(new If(
+                                                        new Lt(new Id("num", lineNum), new Num(1, lineNum), lineNum),
+                                                        new Assign("num_aux", new Num(1, lineNum), lineNum),
+                                                        new Assign("num_aux", new Times(new Id("num", lineNum),
+                                                                        new Call(new This(), "ComputeFac",
+                                                                                        new util.Flist<Exp.T>().list(
+                                                                                                        new Sub(new Id("num",
+                                                                                                                        lineNum),
+                                                                                                                        new Num(1, lineNum),
+                                                                                                                        lineNum)),
+                                                                                        lineNum),
+                                                                        lineNum), lineNum),
+                                                        lineNum)),
+                                        new Id("num_aux", lineNum), lineNum)),
+                        lineNum);
 
         // program
         public static Program.T prog = new ProgramSingle(factorial, new util.Flist<ast.Ast.Class.T>().list(fac));
@@ -64,24 +74,34 @@ public class Fac {
         // represent the program "test/Sum.java".
         // Your code here:
         static MainClass.T sum = new MainClassSingle("Sum", "a",
-                        new Print(new Call(new NewObject("Doit"), "doit", new util.Flist<Exp.T>().list(new Num(101)))));
+                        new Print(new Call(new NewObject("Doit", lineNum), "doit",
+                                        new util.Flist<Exp.T>().list(new Num(101, lineNum)), lineNum), lineNum),
+                        lineNum);
         static ast.Ast.Class.T doit = new ast.Ast.Class.ClassSingle("Doit", null, new util.Flist<Dec.T>().list(),
                         new util.Flist<Method.T>().list(new Method.MethodSingle(new Type.Int(), "doit",
-                                        new util.Flist<Dec.T>().list(new Dec.DecSingle(new Type.Int(), "n")),
-                                        new util.Flist<Dec.T>().list(new Dec.DecSingle(new Type.Int(), "sum"),
-                                                        new Dec.DecSingle(new Type.Int(), "i")),
-                                        new util.Flist<Stm.T>().list(new Assign("i", new Num(0)),
-                                                        new Assign("sum", new Num(0)),
-                                                        new While(new Lt(new Id("i"), new Id("n")), new Block(
-                                                                        new util.Flist<Stm.T>().list(new Assign("sum",
-                                                                                        new Add(new Id("sum"),
-                                                                                                        new Id("i"))),
-                                                                                        new Assign("i", new Add(
-                                                                                                        new Id("i"),
-                                                                                                        new Num(1))))))),
-                                        new Id("sum"))
+                                        new util.Flist<Dec.T>().list(new Dec.DecSingle(new Type.Int(), "n", lineNum)),
+                                        new util.Flist<Dec.T>().list(new Dec.DecSingle(new Type.Int(), "sum", lineNum),
+                                                        new Dec.DecSingle(new Type.Int(), "i", lineNum)),
+                                        new util.Flist<Stm.T>().list(new Assign("i", new Num(0, lineNum), lineNum),
+                                                        new Assign("sum", new Num(0, lineNum), lineNum),
+                                                        new While(new Lt(new Id("i", lineNum), new Id("n", lineNum),
+                                                                        lineNum),
+                                                                        new Block(new util.Flist<Stm.T>().list(
+                                                                                        new Assign("sum", new Add(
+                                                                                                        new Id("sum", lineNum),
+                                                                                                        new Id("i", lineNum),
+                                                                                                        lineNum),
+                                                                                                        lineNum),
+                                                                                        new Assign("i", new Add(new Id(
+                                                                                                        "i", lineNum),
+                                                                                                        new Num(1, lineNum),
+                                                                                                        lineNum),
+                                                                                                        lineNum)),
+                                                                                        lineNum),
+                                                                        lineNum)),
+                                        new Id("sum", lineNum), lineNum)
 
-                        ));
+                        ), lineNum);
         public static Program.T sumprog = new ProgramSingle(sum, new util.Flist<ast.Ast.Class.T>().list(doit));
 
 }

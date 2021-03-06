@@ -11,15 +11,23 @@
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["./test/TreeVisitor.java","-dump","ast"], 
+            "args": ["./test/BadCode.java"], 
         },
         {
             "type": "java",
-            "name": "Launch Tiger",
+            "name": "Launch Tiger-dump",
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
             "args": ["./test/LinkedList.java", "-dump","ast"],
+        },
+        {
+            "type": "java",
+            "name": "Launch Tiger-elab",
+            "request": "launch",
+            "mainClass": "Tiger",
+            "projectName": "tiger",
+            "args": ["-elab","classTable","-elab","methodTable","./test/LinkedList.java"],
         }
     ]
 }
