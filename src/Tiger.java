@@ -12,10 +12,8 @@ import parser.Parser;
 import control.CommandLine;
 import control.Control;
 
-public class Tiger
-{
-  public static void main(String[] args)
-  {
+public class Tiger {
+  public static void main(String[] args) {
     InputStream fstream;
     Parser parser;
 
@@ -41,32 +39,34 @@ public class Tiger
       System.out.println("code generation starting");
       // code generation
       switch (control.Control.ConCodeGen.codegen) {
-      case Bytecode:
-        System.out.println("bytecode codegen");
-        codegen.bytecode.TranslateVisitor trans = new codegen.bytecode.TranslateVisitor();
-        ast.Fac.prog.accept(trans);
-        codegen.bytecode.Ast.Program.T bytecodeAst = trans.program;
-        codegen.bytecode.PrettyPrintVisitor ppbc = new codegen.bytecode.PrettyPrintVisitor();
-        bytecodeAst.accept(ppbc);
-        break;
-      case C:
-        System.out.println("C codegen");
-        codegen.C.TranslateVisitor transC = new codegen.C.TranslateVisitor();
-        ast.Fac.prog.accept(transC);
-        codegen.C.Ast.Program.T cAst = transC.program;
-        codegen.C.PrettyPrintVisitor ppc = new codegen.C.PrettyPrintVisitor();
-        cAst.accept(ppc);
-        break;
-      case Dalvik:
-        // similar
-        break;
-      case X86:
-        // similar
-        break;
-      default:
-        break;
+        case Bytecode:
+          System.out.println("bytecode codegen");
+          codegen.bytecode.TranslateVisitor trans = new codegen.bytecode.TranslateVisitor();
+          ast.Fac.prog.accept(trans);
+          codegen.bytecode.Ast.Program.T bytecodeAst = trans.program;
+          codegen.bytecode.PrettyPrintVisitor ppbc = new codegen.bytecode.PrettyPrintVisitor();
+          bytecodeAst.accept(ppbc);
+          break;
+        case C:
+          System.out.println("C codegen");
+          codegen.C.TranslateVisitor transC = new codegen.C.TranslateVisitor();
+          ast.Fac.prog.accept(transC);
+          codegen.C.Ast.Program.T cAst = transC.program;
+          codegen.C.PrettyPrintVisitor ppc = new codegen.C.PrettyPrintVisitor();
+          cAst.accept(ppc);
+          break;
+        case Dalvik:
+          // similar
+          break;
+        case X86:
+          // similar
+          break;
+        default:
+          break;
       }
       System.out.println("Testing the Tiger compiler on Fac.java finished.");
+      ast.Fac.sumprog.accept(pp);
+
       System.exit(1);
     }
 
@@ -85,7 +85,6 @@ public class Tiger
         fstream = new BufferedInputStream(new FileInputStream(fname));
         Lexer lexer = new Lexer(fname, fstream);
         Token token = lexer.nextToken();
-
         while (token.kind != Token.Kind.TOKEN_EOF) {
           System.out.println(token.toString());
           token = lexer.nextToken();
@@ -126,28 +125,28 @@ public class Tiger
 
     // code generation
     switch (control.Control.ConCodeGen.codegen) {
-    case Bytecode:
-      codegen.bytecode.TranslateVisitor trans = new codegen.bytecode.TranslateVisitor();
-      theAst.accept(trans);
-      codegen.bytecode.Ast.Program.T bytecodeAst = trans.program;
-      codegen.bytecode.PrettyPrintVisitor ppbc = new codegen.bytecode.PrettyPrintVisitor();
-      bytecodeAst.accept(ppbc);
-      break;
-    case C:
-      codegen.C.TranslateVisitor transC = new codegen.C.TranslateVisitor();
-      theAst.accept(transC);
-      codegen.C.Ast.Program.T cAst = transC.program;
-      codegen.C.PrettyPrintVisitor ppc = new codegen.C.PrettyPrintVisitor();
-      cAst.accept(ppc);
-      break;
-    case Dalvik:
-      // similar
-      break;
-    case X86:
-      // similar
-      break;
-    default:
-      break;
+      case Bytecode:
+        codegen.bytecode.TranslateVisitor trans = new codegen.bytecode.TranslateVisitor();
+        theAst.accept(trans);
+        codegen.bytecode.Ast.Program.T bytecodeAst = trans.program;
+        codegen.bytecode.PrettyPrintVisitor ppbc = new codegen.bytecode.PrettyPrintVisitor();
+        bytecodeAst.accept(ppbc);
+        break;
+      case C:
+        codegen.C.TranslateVisitor transC = new codegen.C.TranslateVisitor();
+        theAst.accept(transC);
+        codegen.C.Ast.Program.T cAst = transC.program;
+        codegen.C.PrettyPrintVisitor ppc = new codegen.C.PrettyPrintVisitor();
+        cAst.accept(ppc);
+        break;
+      case Dalvik:
+        // similar
+        break;
+      case X86:
+        // similar
+        break;
+      default:
+        break;
     }
 
     // Lab3, exercise 6: add some glue code to
