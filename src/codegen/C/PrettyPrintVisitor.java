@@ -36,35 +36,29 @@ import codegen.C.Ast.Vtable;
 import codegen.C.Ast.Vtable.VtableSingle;
 import control.Control;
 
-public class PrettyPrintVisitor implements Visitor
-{
+public class PrettyPrintVisitor implements Visitor {
   private int indentLevel;
   private java.io.BufferedWriter writer;
 
-  public PrettyPrintVisitor()
-  {
+  public PrettyPrintVisitor() {
     this.indentLevel = 2;
   }
 
-  private void indent()
-  {
+  private void indent() {
     this.indentLevel += 2;
   }
 
-  private void unIndent()
-  {
+  private void unIndent() {
     this.indentLevel -= 2;
   }
 
-  private void printSpaces()
-  {
+  private void printSpaces() {
     int i = this.indentLevel;
     while (i-- != 0)
       this.say(" ");
   }
 
-  private void sayln(String s)
-  {
+  private void sayln(String s) {
     say(s);
     try {
       this.writer.write("\n");
@@ -74,8 +68,7 @@ public class PrettyPrintVisitor implements Visitor
     }
   }
 
-  private void say(String s)
-  {
+  private void say(String s) {
     try {
       this.writer.write(s);
     } catch (Exception e) {
@@ -87,23 +80,30 @@ public class PrettyPrintVisitor implements Visitor
   // /////////////////////////////////////////////////////
   // expressions
   @Override
-  public void visit(Add e)
-  {
+  public void visit(Add e) {
+
+    e.left.accept(this);
+    this.say(" + ");
+    e.right.accept(this);
   }
 
   @Override
-  public void visit(And e)
-  {
+  public void visit(And e) {
+    e.left.accept(this);
+    this.say(" && ");
+    e.right.accept(this);
   }
 
   @Override
-  public void visit(ArraySelect e)
-  {
+  public void visit(ArraySelect e) {
+    e.array.accept(this);
+    this.say("[");
+    e.index.accept(this);
+    this.say("]");
   }
 
   @Override
-  public void visit(Call e)
-  {
+  public void visit(Call e) {
     this.say("(" + e.assign + "=");
     e.exp.accept(this);
     this.say(", ");
@@ -122,53 +122,84 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(Id e)
-  {
+  public void visit(Id e) {
     this.say(e.id);
   }
 
   @Override
-  public void visit(Length e)
-  {
+  public void visit(Length e) {
+    this.say("*((int*)(");
+    e.array.accept(this);
+    this.say(")-1)");
+  }
+
+  private boolean isLtPrintBrackets(Exp.T e) {
+    if (e instanceof Exp.Sub || e instanceof Exp.Times || e instanceof Exp.Add) {
+      return true;
+    }
+    return false;
   }
 
   @Override
-  public void visit(Lt e)
-  {
+  public void visit(Lt e) {
+    if (isLtPrintBrackets(e.left)) {
+      this.say("(");
+    }
     e.left.accept(this);
+    if (isLtPrintBrackets(e.left)) {
+      this.say(")");
+    }
     this.say(" < ");
+
+    if (isLtPrintBrackets(e.right)) {
+      this.say("(");
+    }
     e.right.accept(this);
+    if (isLtPrintBrackets(e.right)) {
+      this.say(")");
+    }
     return;
   }
 
   @Override
-  public void visit(NewIntArray e)
-  {
+  public void visit(NewIntArray e) {
+    this.say("(int*)(Tiger_new_array(");
+    e.exp.accept(this);
+    this.say(")");
   }
 
   @Override
-  public void visit(NewObject e)
-  {
-    this.say("((struct " + e.id + "*)(Tiger_new (&" + e.id
-        + "_vtable_, sizeof(struct " + e.id + "))))");
+  public void visit(NewObject e) {
+    this.say("((struct " + e.id + "*)(Tiger_new (&" + e.id + "_vtable_, sizeof(struct " + e.id + "))))");
     return;
   }
 
-  @Override
-  public void visit(Not e)
-  {
+  private boolean isNotPrintBrackets(Exp.T e) {
+    if (e instanceof Exp.And || e instanceof Exp.Lt)
+      return true;
+    return false;
+
   }
 
   @Override
-  public void visit(Num e)
-  {
+  public void visit(Not e) {
+    this.say("!");
+    if (isNotPrintBrackets(e.exp)) {
+      this.say("(");
+      e.exp.accept(this);
+      this.say(")");
+    } else
+      e.exp.accept(this);
+  }
+
+  @Override
+  public void visit(Num e) {
     this.say(Integer.toString(e.num));
     return;
   }
 
   @Override
-  public void visit(Sub e)
-  {
+  public void visit(Sub e) {
     e.left.accept(this);
     this.say(" - ");
     e.right.accept(this);
@@ -176,24 +207,42 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(This e)
-  {
+  public void visit(This e) {
     this.say("this");
   }
 
+  private boolean isTimesPrintBrackets(Exp.T e) {
+    if (e instanceof Exp.Add || e instanceof Exp.Sub) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   @Override
-  public void visit(Times e)
-  {
+  public void visit(Times e) {
+
+    if (isTimesPrintBrackets(e.left)) {
+      this.say("(");
+    }
     e.left.accept(this);
+    if (isTimesPrintBrackets(e.left)) {
+      this.say(")");
+    }
     this.say(" * ");
+    if (isTimesPrintBrackets(e.right)) {
+      this.say("(");
+    }
     e.right.accept(this);
+    if (isTimesPrintBrackets(e.right)) {
+      this.say(")");
+    }
     return;
   }
 
   // statements
   @Override
-  public void visit(Assign s)
-  {
+  public void visit(Assign s) {
     this.printSpaces();
     this.say(s.id + " = ");
     s.exp.accept(this);
@@ -202,38 +251,54 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(AssignArray s)
-  {
+  public void visit(AssignArray s) {
+    this.printSpaces();
+    this.say(s.id + "[");
+    s.index.accept(this);
+    this.say("] = ");
+    s.exp.accept(this);
+    this.sayln(";");
   }
 
   @Override
-  public void visit(Block s)
-  {
+  public void visit(Block s) {
+    this.printSpaces();
+    this.sayln("{");
+    this.indent();
+    for (Stm.T stm : s.stms) {
+      stm.accept(this);
+    }
+    this.unIndent();
+    this.printSpaces();
+    this.sayln("}");
   }
 
   @Override
-  public void visit(If s)
-  {
+  public void visit(If s) {
+
     this.printSpaces();
     this.say("if (");
     s.condition.accept(this);
     this.sayln(")");
-    this.indent();
+    if (!(s.thenn instanceof Stm.Block))
+      this.indent();
     s.thenn.accept(this);
-    this.unIndent();
+    if (!(s.thenn instanceof Stm.Block))
+      this.unIndent();
     this.sayln("");
     this.printSpaces();
     this.sayln("else");
-    this.indent();
+    if (!(s.elsee instanceof Stm.Block) && !(s.elsee instanceof Stm.If))
+      this.indent();
     s.elsee.accept(this);
+    if (!(s.elsee instanceof Stm.Block) && !(s.elsee instanceof Stm.If))
+      this.unIndent();
     this.sayln("");
-    this.unIndent();
     return;
   }
 
   @Override
-  public void visit(Print s)
-  {
+  public void visit(Print s) {
     this.printSpaces();
     this.say("System_out_println (");
     s.exp.accept(this);
@@ -242,38 +307,44 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(While s)
-  {
+  public void visit(While s) {
+    this.printSpaces();
+    this.say("while (");
+    s.condition.accept(this);
+    this.sayln(")");
+    if (!(s.body instanceof Stm.Block))
+      this.indent();
+    s.body.accept(this);
+    if (!(s.body instanceof Stm.Block))
+      this.unIndent();
   }
 
   // type
   @Override
-  public void visit(ClassType t)
-  {
+  public void visit(ClassType t) {
     this.say("struct " + t.id + " *");
   }
 
   @Override
-  public void visit(Int t)
-  {
+  public void visit(Int t) {
     this.say("int");
   }
 
   @Override
-  public void visit(IntArray t)
-  {
+  public void visit(IntArray t) {
+    this.say("int *");
   }
 
   // dec
   @Override
-  public void visit(DecSingle d)
-  {
+  public void visit(DecSingle d) {
+    d.type.accept(this);
+    this.sayln(" " + d.id);
   }
 
   // method
   @Override
-  public void visit(MethodSingle m)
-  {
+  public void visit(MethodSingle m) {
     m.retType.accept(this);
     this.say(" " + m.classId + "_" + m.id + "(");
     int size = m.formals.size();
@@ -305,8 +376,7 @@ public class PrettyPrintVisitor implements Visitor
   }
 
   @Override
-  public void visit(MainMethodSingle m)
-  {
+  public void visit(MainMethodSingle m) {
     this.sayln("int Tiger_main ()");
     this.sayln("{");
     for (Dec.T dec : m.locals) {
@@ -323,8 +393,7 @@ public class PrettyPrintVisitor implements Visitor
 
   // vtables
   @Override
-  public void visit(VtableSingle v)
-  {
+  public void visit(VtableSingle v) {
     this.sayln("struct " + v.id + "_vtable");
     this.sayln("{");
     for (codegen.C.Ftuple t : v.ms) {
@@ -336,8 +405,7 @@ public class PrettyPrintVisitor implements Visitor
     return;
   }
 
-  private void outputVtable(VtableSingle v)
-  {
+  private void outputVtable(VtableSingle v) {
     this.sayln("struct " + v.id + "_vtable " + v.id + "_vtable_ = ");
     this.sayln("{");
     for (codegen.C.Ftuple t : v.ms) {
@@ -350,8 +418,7 @@ public class PrettyPrintVisitor implements Visitor
 
   // class
   @Override
-  public void visit(ClassSingle c)
-  {
+  public void visit(ClassSingle c) {
     this.sayln("struct " + c.id);
     this.sayln("{");
     this.sayln("  struct " + c.id + "_vtable *vptr;");
@@ -367,8 +434,7 @@ public class PrettyPrintVisitor implements Visitor
 
   // program
   @Override
-  public void visit(ProgramSingle p)
-  {
+  public void visit(ProgramSingle p) {
     // we'd like to output to a file, rather than the "stdout".
     try {
       String outputName = null;
@@ -379,8 +445,8 @@ public class PrettyPrintVisitor implements Visitor
       else
         outputName = "a.c";
 
-      this.writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(
-          new java.io.FileOutputStream(outputName)));
+      this.writer = new java.io.BufferedWriter(
+          new java.io.OutputStreamWriter(new java.io.FileOutputStream(outputName)));
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);

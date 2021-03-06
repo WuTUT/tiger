@@ -12,17 +12,16 @@
       |
       p (returned address)
 */
-void *Tiger_new (void *vtable, int size)
+void *Tiger_new(void *vtable, int size)
 {
   // You should write 4 statements for this function.
   // #1: "malloc" a chunk of memory (be careful of the size) :
-  
+
   // #2: clear this chunk of memory (zero off it):
-  
+
   // #3: set up the "vptr" pointer to the value of "vtable":
-  
-  // #4: return the pointer 
-  
+
+  // #4: return the pointer
 }
 
 // "new" an array of size "length", do necessary
@@ -30,7 +29,7 @@ void *Tiger_new (void *vtable, int size)
 // extra "header" storing the array length.
 // This function should return the starting address
 // of the array elements, but not the starting address of
-// the array chunk. 
+// the array chunk.
 /*    ---------------------------------------------
       | length | e0 | e1 | ...      | e_{length-1}|                           
       ---------------------------------------------
@@ -38,9 +37,12 @@ void *Tiger_new (void *vtable, int size)
                |
                p (returned address)
 */
-void *Tiger_new_array (int length)
+void *Tiger_new_array(int length)
 {
   // You can use the C "malloc" facilities, as above.
   // Your code here:
-  
+  int *p = malloc(sizeof(int) * (length + 1));
+  memset(p + 1, 0, sizeof(int) * length);
+  *p = length;
+  return p + 1;
 }
