@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-int main (int argc, char **argv)
+int Tiger_main();
+int main(int argc, char **argv)
 {
-  Tiger_main ();	
+  Tiger_main();
 }

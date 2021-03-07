@@ -14,14 +14,16 @@
 */
 void *Tiger_new(void *vtable, int size)
 {
+
   // You should write 4 statements for this function.
   // #1: "malloc" a chunk of memory (be careful of the size) :
-
+  void *p = malloc(size);
   // #2: clear this chunk of memory (zero off it):
-
+  memset(p, 0, size);
   // #3: set up the "vptr" pointer to the value of "vtable":
-
+  *((void **)p) = vtable;
   // #4: return the pointer
+  return p;
 }
 
 // "new" an array of size "length", do necessary
