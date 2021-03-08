@@ -179,6 +179,7 @@ public class ElaboratorVisitor implements ast.Visitor {
     }
     if (type == null) {
       System.out.println("Error: Variable not found: " + e.id + " at line: " + e.lineNum);
+      type = new Type.Int();
     } else if (!e.isField) {
       this.methodTable.setused(e.id);
     }
@@ -283,7 +284,7 @@ public class ElaboratorVisitor implements ast.Visitor {
     // if search failed, then s.id must
     if (type == null) {
       type = this.classTable.get(this.currentClass, s.id);
-
+      s.isField = true;
     }
     if (type == null) {
       System.out.println("Error: variable " + s.id + " not declared at line: " + s.lineNum);
@@ -314,6 +315,17 @@ public class ElaboratorVisitor implements ast.Visitor {
     if (!this.type.toString().equals("@int")) {
       System.out.println("Error: Array assign value must be int in MiniJava");
       error(s.lineNum);
+    }
+    Type.T type = this.methodTable.get(s.id);
+    if (type == null) {
+      type = this.classTable.get(this.currentClass, s.id);
+      s.isField = true;
+    }
+    if (type == null) {
+      System.out.println("Error: variable " + s.id + " not declared at line: " + s.lineNum);
+    } else if (type.toString().equals("@int[]")) {
+      System.out.println("Error: Assign Array in minijava must be int array at line: " + s.lineNum);
+      // type= new Type.IntArray();
     }
     this.type = null;
   }

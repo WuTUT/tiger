@@ -118,7 +118,10 @@ public class TranslateVisitor implements ast.Visitor {
 
   @Override
   public void visit(ast.Ast.Exp.Id e) {
-    this.exp = new Id(e.id);
+    if (e.isField) {
+      this.exp = new Id("this->" + e.id);
+    } else
+      this.exp = new Id(e.id);
     return;
   }
 
@@ -199,7 +202,10 @@ public class TranslateVisitor implements ast.Visitor {
   @Override
   public void visit(ast.Ast.Stm.Assign s) {
     s.exp.accept(this);
-    this.stm = new Assign(s.id, this.exp);
+    if (s.isField) {
+      this.stm = new Assign("this->" + s.id, this.exp);
+    } else
+      this.stm = new Assign(s.id, this.exp);
     return;
   }
 
@@ -209,8 +215,10 @@ public class TranslateVisitor implements ast.Visitor {
     Exp.T index = this.exp;
     s.exp.accept(this);
     Exp.T exp = this.exp;
-
-    this.stm = new Stm.AssignArray(s.id, index, exp);
+    if (s.isField) {
+      this.stm = new Stm.AssignArray("this->" + s.id, index, exp);
+    } else
+      this.stm = new Stm.AssignArray(s.id, index, exp);
   }
 
   @Override

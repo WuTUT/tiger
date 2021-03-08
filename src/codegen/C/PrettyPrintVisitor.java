@@ -165,7 +165,7 @@ public class PrettyPrintVisitor implements Visitor {
   public void visit(NewIntArray e) {
     this.say("(int*)(Tiger_new_array(");
     e.exp.accept(this);
-    this.say(")");
+    this.say("))");
   }
 
   @Override
@@ -246,7 +246,7 @@ public class PrettyPrintVisitor implements Visitor {
     this.printSpaces();
     this.say(s.id + " = ");
     s.exp.accept(this);
-    this.say(";");
+    this.sayln(";");
     return;
   }
 
@@ -463,6 +463,7 @@ public class PrettyPrintVisitor implements Visitor {
     this.sayln("// vtables structures");
     for (Vtable.T v : p.vtables) {
       v.accept(this);
+      this.sayln("struct " + ((Vtable.VtableSingle) v).id + "_vtable " + ((Vtable.VtableSingle) v).id + "_vtable_;");
     }
     this.sayln("");
 

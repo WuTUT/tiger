@@ -424,6 +424,7 @@ public class Ast {
     public static class Assign extends T {
       public String id;
       public Exp.T exp;
+      public boolean isField;
       public Type.T type; // type of the id
 
       public Assign(String id, Exp.T exp, int lineNum) {
@@ -442,6 +443,7 @@ public class Ast {
     // assign-array
     public static class AssignArray extends T {
       public String id;
+      public boolean isField;
       public Exp.T index;
       public Exp.T exp;
 
