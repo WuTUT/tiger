@@ -96,7 +96,14 @@ p---->| v_0          | \
 //           the Java heap.)
 void *Tiger_new(void *vtable, int size)
 {
-  // Your code here:
+
+  void *p = malloc(size);
+
+  memset(p, 0, size);
+
+  *((void **)p) = vtable;
+
+  return p;
 }
 
 // "new" an array of size "length", do necessary
@@ -136,8 +143,11 @@ p---->| e_0          | \
 void *Tiger_new_array(int length)
 {
   // Your code here:
+  int *p = malloc(sizeof(int) * (length + 1));
+  memset(p + 1, 0, sizeof(int) * length);
+  *p = length;
+  return p + 1;
 }
-
 //===============================================================//
 // The Gimple Garbage Collector
 

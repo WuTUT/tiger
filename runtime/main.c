@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "control.h"
 extern void Tiger_heap_init(int);
 int Tiger_main();
 int main(int argc, char **argv)
@@ -19,7 +19,6 @@ int main(int argc, char **argv)
   // Your code here:
 
   // initialize the Java heap
-  extern Control_heapSize;
   Tiger_heap_init(Control_heapSize);
 
   // enter Java code...
