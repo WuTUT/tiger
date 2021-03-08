@@ -37,101 +37,137 @@ import ast.Ast.Type;
 import ast.Ast.Type.ClassType;
 import control.Control.ConAst;
 
-public class ElaboratorVisitor implements ast.Visitor
-{
+public class ElaboratorVisitor implements ast.Visitor {
   public ClassTable classTable; // symbol table for class
   public MethodTable methodTable; // symbol table for each method
   public String currentClass; // the class name being elaborated
   public Type.T type; // type of the expression being elaborated
 
-  public ElaboratorVisitor()
-  {
+  public ElaboratorVisitor() {
     this.classTable = new ClassTable();
     this.methodTable = new MethodTable();
     this.currentClass = null;
     this.type = null;
   }
 
-  private void error()
-  {
-    System.out.println("type mismatch");
-    System.exit(1);
+  private void error(int lineNum) {
+    System.out.println("Error: type mismatch at line " + lineNum + " type is:" + this.type.toString());
+    // System.exit(1);
   }
 
   // /////////////////////////////////////////////////////
   // expressions
   @Override
-  public void visit(Add e)
-  {
+  public void visit(Add e) {
+    e.left.accept(this);
+    Type.T leftty = this.type;
+    e.right.accept(this);
+    if (!this.type.toString().equals(leftty.toString()))
+      error(e.lineNum);
+    this.type = new Type.Int();
+    return;
   }
 
   @Override
-  public void visit(And e)
-  {
+  public void visit(And e) {
+    e.left.accept(this);
+    Type.T ty = this.type;
+    e.right.accept(this);
+    if (!this.type.toString().equals(ty.toString()))
+      error(e.lineNum);
+    this.type = new Type.Boolean();
+    return;
   }
 
   @Override
-  public void visit(ArraySelect e)
-  {
+  public void visit(ArraySelect e) {
+    e.array.accept(this);
+    Type.T ty = this.type;
+    e.index.accept(this);
+    if (!this.type.toString().equals("@int")) {
+      error(e.lineNum);
+    }
+
+    if (ty instanceof Type.IntArray) {
+      this.type = new Type.Int();
+    } else {
+      error(e.lineNum);
+    }
+
+    // this.type= ty.getClass.newinstance();
   }
 
   @Override
-  public void visit(Call e)
-  {
+  public void visit(Call e) {
     Type.T leftty;
     Type.ClassType ty = null;
 
+    java.util.LinkedList<Type.T> argsty = new LinkedList<Type.T>();
+    MethodType mty = null;
     e.exp.accept(this);
     leftty = this.type;
-    if (leftty instanceof ClassType) {
+    if (!(leftty instanceof ClassType)) {
+      System.out.println("Error: a non-class type variable calls method at line: " + e.lineNum);
+    } else {
       ty = (ClassType) leftty;
       e.type = ty.id;
-    } else
-      error();
-    MethodType mty = this.classTable.getm(ty.id, e.id);
+      mty = this.classTable.getm(ty.id, e.id);
+      if (mty == null) {
+        System.out
+            .println("Error: method " + e.id + " not founded in class " + leftty.toString() + "at line:" + e.lineNum);
+        // error(e.lineNum);
+      } else {
+        for (Exp.T a : e.args) {
+          a.accept(this);
+          argsty.addLast(this.type);
+        }
+        if (mty.argsType.size() != argsty.size()) {
+          System.out.println("Error: args number should be " + mty.argsType.size() + " but get " + argsty.size()
+              + "  at line: " + e.lineNum);
+          // error(e.lineNum);
+        } else {
+          for (int i = 0; i < argsty.size(); i++) {
+            Dec.DecSingle dec = (Dec.DecSingle) mty.argsType.get(i);
+            if (dec.type.toString().equals(argsty.get(i).toString()))
+              ;
+            else {
+              String expectDecString = dec.type.toString();
+              String className = argsty.get(i).toString();
+              String fatherClassName = this.classTable.get(className).extendss;
+              boolean flag = false;
+              while (fatherClassName != null) {
+                if (fatherClassName.equals(expectDecString)) {
+                  flag = true;
+                  break;
+                }
+                fatherClassName = this.classTable.get(fatherClassName).extendss;
+              }
+              if (flag == false)
+                System.out.println("Error: Line: " + e.lineNum + " declared argument Type is " + dec.type.toString()
+                    + " but get " + argsty.get(i).toString());
+              // error();
+            }
 
-    java.util.LinkedList<Type.T> declaredArgTypes
-    = new java.util.LinkedList<Type.T>();
-    for (Dec.T dec: mty.argsType){
-      declaredArgTypes.add(((Dec.DecSingle)dec).type);
+          }
+        }
+      }
     }
-    java.util.LinkedList<Type.T> argsty = new LinkedList<Type.T>();
-    for (Exp.T a : e.args) {
-      a.accept(this);
-      argsty.addLast(this.type);
-    }
-    if (declaredArgTypes.size() != argsty.size())
-      error();
-    // For now, the following code only checks that
-    // the types for actual and formal arguments should
-    // be the same. However, in MiniJava, the actual type
-    // of the parameter can also be a subtype (sub-class) of the 
-    // formal type. That is, one can pass an object of type "A"
-    // to a method expecting a type "B", whenever type "A" is
-    // a sub-class of type "B".
-    // Modify the following code accordingly:
-    for (int i = 0; i < argsty.size(); i++) {
-      Dec.DecSingle dec = (Dec.DecSingle) mty.argsType.get(i);
-      if (dec.type.toString().equals(argsty.get(i).toString()))
-        ;
-      else
-        error();
-    }
-    this.type = mty.retType;
-    // the following two types should be the declared types.
-    e.at = declaredArgTypes;
+    if (mty == null)
+      this.type = new Type.Int();
+    else
+      this.type = mty.retType;
+    e.at = argsty;
     e.rt = this.type;
     return;
   }
 
   @Override
-  public void visit(False e)
-  {
+  public void visit(False e) {
+    this.type = new Type.Boolean();
   }
 
   @Override
-  public void visit(Id e)
-  {
+  public void visit(Id e) {
     // first look up the id in method table
     Type.T type = this.methodTable.get(e.id);
     // if search failed, then s.id must be a class field.
@@ -141,8 +177,12 @@ public class ElaboratorVisitor implements ast.Visitor
       // useful in later phase.
       e.isField = true;
     }
-    if (type == null)
-      error();
+    if (type == null) {
+      System.out.println("Error: Variable not found: " + e.id + " at line: " + e.lineNum);
+      type = new Type.Int();
+    } else if (!e.isField) {
+      this.methodTable.setused(e.id);
+    }
     this.type = type;
     // record this type on this node for future use.
     e.type = type;
@@ -150,182 +190,233 @@ public class ElaboratorVisitor implements ast.Visitor
   }
 
   @Override
-  public void visit(Length e)
-  {
+  public void visit(Length e) {
+    e.array.accept(this);
+    if (!this.type.toString().equals("@int[]")) {
+      error(e.lineNum);
+      System.out.println("Error: expected int[];");
+    }
+    this.type = new Type.Int();
   }
 
   @Override
-  public void visit(Lt e)
-  {
+  public void visit(Lt e) {
     e.left.accept(this);
     Type.T ty = this.type;
     e.right.accept(this);
     if (!this.type.toString().equals(ty.toString()))
-      error();
+      error(e.lineNum);
     this.type = new Type.Boolean();
     return;
   }
 
   @Override
-  public void visit(NewIntArray e)
-  {
+  public void visit(NewIntArray e) {
+    e.exp.accept(this);
+    if (!this.type.toString().equals("@int")) {
+      error(e.lineNum);
+      System.out.println("Error: expected int;");
+    }
+    this.type = new Type.IntArray();
   }
 
   @Override
-  public void visit(NewObject e)
-  {
+  public void visit(NewObject e) {
     this.type = new Type.ClassType(e.id);
     return;
   }
 
   @Override
-  public void visit(Not e)
-  {
+  public void visit(Not e) {
+    e.exp.accept(this);
+    if (!this.type.toString().equals("@boolean")) {
+      error(e.lineNum);
+
+      System.out.println("Error: expected boolean;");
+    }
+    this.type = new Type.Boolean();
   }
 
   @Override
-  public void visit(Num e)
-  {
+  public void visit(Num e) {
     this.type = new Type.Int();
     return;
   }
 
   @Override
-  public void visit(Sub e)
-  {
+  public void visit(Sub e) {
     e.left.accept(this);
     Type.T leftty = this.type;
     e.right.accept(this);
     if (!this.type.toString().equals(leftty.toString()))
-      error();
+      error(e.lineNum);
     this.type = new Type.Int();
     return;
   }
 
   @Override
-  public void visit(This e)
-  {
+  public void visit(This e) {
     this.type = new Type.ClassType(this.currentClass);
     return;
   }
 
   @Override
-  public void visit(Times e)
-  {
+  public void visit(Times e) {
     e.left.accept(this);
     Type.T leftty = this.type;
     e.right.accept(this);
     if (!this.type.toString().equals(leftty.toString()))
-      error();
+      error(e.lineNum);
     this.type = new Type.Int();
     return;
   }
 
   @Override
-  public void visit(True e)
-  {
+  public void visit(True e) {
+    this.type = new Type.Boolean();
   }
 
   // statements
   @Override
-  public void visit(Assign s)
-  {
+  public void visit(Assign s) {
     // first look up the id in method table
     Type.T type = this.methodTable.get(s.id);
     // if search failed, then s.id must
-    if (type == null)
+    if (type == null) {
       type = this.classTable.get(this.currentClass, s.id);
-    if (type == null)
-      error();
+      s.isField = true;
+    }
+    if (type == null) {
+      System.out.println("Error: variable " + s.id + " not declared at line: " + s.lineNum);
+    }
+    // else if(this.methodTable.){} not used,because it is init but not be right
+
     s.exp.accept(this);
+    if (type == null)
+      type = this.type;
+    if (type == null)
+      type = new Type.Int();
     s.type = type;
-    this.type.toString().equals(type.toString());
+    if (!this.type.toString().equals(type.toString())) {
+      System.out.println("Error: assign type " + this.type.toString() + " to " + s.type.toString());
+    }
+    this.type = null;
     return;
   }
 
   @Override
-  public void visit(AssignArray s)
-  {
+  public void visit(AssignArray s) {
+    s.exp.accept(this);
+    if (!this.type.toString().equals("@int")) {
+      System.out.println("Error: Array assign value must be int in MiniJava");
+      error(s.lineNum);
+    }
+    s.index.accept(this);
+    if (!this.type.toString().equals("@int")) {
+      System.out.println("Error: Array assign value must be int in MiniJava");
+      error(s.lineNum);
+    }
+    Type.T type = this.methodTable.get(s.id);
+    if (type == null) {
+      type = this.classTable.get(this.currentClass, s.id);
+      s.isField = true;
+    }
+    if (type == null) {
+      System.out.println("Error: variable " + s.id + " not declared at line: " + s.lineNum);
+    } else if (type.toString().equals("@int[]")) {
+      System.out.println("Error: Assign Array in minijava must be int array at line: " + s.lineNum);
+      // type= new Type.IntArray();
+    }
+    this.type = null;
   }
 
   @Override
-  public void visit(Block s)
-  {
+  public void visit(Block s) {
+    for (Stm.T stm : s.stms) {
+      stm.accept(this);
+    }
+    this.type = null;
   }
 
   @Override
-  public void visit(If s)
-  {
+  public void visit(If s) {
     s.condition.accept(this);
     if (!this.type.toString().equals("@boolean"))
-      error();
+      error(s.lineNum);
     s.thenn.accept(this);
     s.elsee.accept(this);
+    this.type = null;
     return;
   }
 
   @Override
-  public void visit(Print s)
-  {
+  public void visit(Print s) {
     s.exp.accept(this);
     if (!this.type.toString().equals("@int"))
-      error();
+      error(s.lineNum);
+    this.type = null;
     return;
   }
 
   @Override
-  public void visit(While s)
-  {
+  public void visit(While s) {
+    s.condition.accept(this);
+    if (!this.type.toString().equals("@boolean"))
+      error(s.lineNum);
+    s.body.accept(this);
+    this.type = null;
   }
 
   // type
   @Override
-  public void visit(Type.Boolean t)
-  {
+  public void visit(Type.Boolean t) {
+
   }
 
   @Override
-  public void visit(Type.ClassType t)
-  {
+  public void visit(Type.ClassType t) {
   }
 
   @Override
-  public void visit(Type.Int t)
-  {
+  public void visit(Type.Int t) {
     System.out.println("aaaa");
   }
 
   @Override
-  public void visit(Type.IntArray t)
-  {
+  public void visit(Type.IntArray t) {
   }
 
   // dec
   @Override
-  public void visit(Dec.DecSingle d)
-  {
+  public void visit(Dec.DecSingle d) {
+
   }
 
   // method
   @Override
-  public void visit(Method.MethodSingle m)
-  {
+  public void visit(Method.MethodSingle m) {
     // construct the method table
     this.methodTable.put(m.formals, m.locals);
 
-    if (ConAst.elabMethodTable)
+    if (ConAst.elabMethodTable) {
+
+      System.out.println("================================");
+      System.out.println("method <" + m.id + "> SymTable Lists:");
       this.methodTable.dump();
+      System.out.println("method SymTable Lists OK.");
+    }
 
     for (Stm.T s : m.stms)
       s.accept(this);
     m.retExp.accept(this);
+    this.methodTable.checkused();
+    this.methodTable = new MethodTable();
     return;
   }
 
   // class
   @Override
-  public void visit(Class.ClassSingle c)
-  {
+  public void visit(Class.ClassSingle c) {
     this.currentClass = c.id;
 
     for (Method.T m : c.methods) {
@@ -336,8 +427,7 @@ public class ElaboratorVisitor implements ast.Visitor
 
   // main class
   @Override
-  public void visit(MainClass.MainClassSingle c)
-  {
+  public void visit(MainClass.MainClassSingle c) {
     this.currentClass = c.id;
     // "main" has an argument "arg" of type "String[]", but
     // one has no chance to use it. So it's safe to skip it...
@@ -349,14 +439,12 @@ public class ElaboratorVisitor implements ast.Visitor
   // ////////////////////////////////////////////////////////
   // step 1: build class table
   // class table for Main class
-  private void buildMainClass(MainClass.MainClassSingle main)
-  {
+  private void buildMainClass(MainClass.MainClassSingle main) {
     this.classTable.put(main.id, new ClassBinding(null));
   }
 
   // class table for normal classes
-  private void buildClass(ClassSingle c)
-  {
+  private void buildClass(ClassSingle c) {
     this.classTable.put(c.id, new ClassBinding(c.extendss));
     for (Dec.T dec : c.decs) {
       Dec.DecSingle d = (Dec.DecSingle) dec;
@@ -373,8 +461,7 @@ public class ElaboratorVisitor implements ast.Visitor
 
   // program
   @Override
-  public void visit(ProgramSingle p)
-  {
+  public void visit(ProgramSingle p) {
     // ////////////////////////////////////////////////
     // step 1: build a symbol table for class (the class table)
     // a class table is a mapping from class names to class bindings
