@@ -5,12 +5,31 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/out/cout/TestGc.java.out",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "type": "java",
-            "name": "Launch Current File",
+            "name": "Launch Tiger codegen",
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["./test/BadCode.java"], 
+            "args": ["./test/Factorial.java","-codegen","C"], 
         },
         {
             "type": "java",
@@ -18,7 +37,7 @@
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["./test/LinkedList.java", "-dump","ast"],
+            "args": ["./test/TestGc.java", "-dump","ast"],
         },
         {
             "type": "java",
