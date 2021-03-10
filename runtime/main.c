@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "control.h"
+#include "command-line.h"
 extern void Tiger_heap_init(int);
 int Tiger_main();
 int main(int argc, char **argv)
@@ -17,8 +18,18 @@ int main(int argc, char **argv)
   // You can use the offered function in file "control.c"
   // and "command-line.c"
   // Your code here:
-
+  CommandLine_doarg(argc, argv);
   // initialize the Java heap
+  //printf("init heapsize is %d\n", Control_heapSize);
+  //printf("islog : ");
+  //if (logflag)
+  //{
+  //printf("true\n");
+  //}
+  //else
+  //{
+  //printf("false\n");
+  //}
   Tiger_heap_init(Control_heapSize);
 
   // enter Java code...

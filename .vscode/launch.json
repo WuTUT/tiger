@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/out/cout/TestGc.java.out",
-            "args": [],
+            "args": ["@tiger", "-heapSize","512","@"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

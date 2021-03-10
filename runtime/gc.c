@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "control.h"
+#include <time.h>
 static void Tiger_gc();
 int gccnt = 0;
 // The Gimple Garbage Collector.
@@ -264,6 +265,8 @@ static void *forward(int *p)
 static void Tiger_gc()
 {
   // Your code here:
+  clock_t t;
+  t = clock();
   int beforegc_space = heap.from + heap.size - heap.fromFree;
   scan = next = heap.to;
   void **tmpprev = (void **)__prev;
@@ -331,7 +334,7 @@ static void Tiger_gc()
     }
     scan = sumsz;
   }
-  printf("beforegc %d\n", beforegc_space);
+  //printf("beforegc %d\n", beforegc_space);
   //printf("next is %p\n", next);
   char *from = heap.from;
   heap.from = heap.to;
@@ -339,6 +342,8 @@ static void Tiger_gc()
   heap.fromFree = next;
   heap.to = from;
   int aftergc_space = heap.from + heap.size - heap.fromFree;
-  printf("aftergc %d \n", aftergc_space);
-  printf("%d round of GC: ,collected %d bytes\n", ++gccnt, aftergc_space - beforegc_space);
+  //printf("aftergc %d \n", aftergc_space);
+  t = clock() - t;
+  if (logflag)
+    printf("%d round of GC: %.7lf s ,collected %d bytes\n", ++gccnt, ((double)t) / CLOCKS_PER_SEC, aftergc_space - beforegc_space);
 }
