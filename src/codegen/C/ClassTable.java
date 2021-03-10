@@ -3,24 +3,19 @@ package codegen.C;
 import codegen.C.Ast.Dec;
 import codegen.C.Ast.Type;
 
-public class ClassTable
-{
+public class ClassTable {
   private java.util.Hashtable<String, ClassBinding> table;
 
-  public ClassTable()
-  {
+  public ClassTable() {
     this.table = new java.util.Hashtable<String, ClassBinding>();
   }
 
-  public void init(String current, String extendss)
-  {
+  public void init(String current, String extendss) {
     this.table.put(current, new ClassBinding(extendss));
     return;
   }
 
-  public void initDecs(String current,
-      java.util.LinkedList<Dec.T> decs)
-  {
+  public void initDecs(String current, java.util.LinkedList<Dec.T> decs) {
     ClassBinding cb = this.table.get(current);
     for (Dec.T dec : decs) {
       Dec.DecSingle decc = (Dec.DecSingle) dec;
@@ -29,16 +24,13 @@ public class ClassTable
     this.table.put(current, cb);
   }
 
-  public void initMethod(String current, Type.T ret,
-      java.util.LinkedList<Dec.T> args, String mid)
-  {
+  public void initMethod(String current, Type.T ret, java.util.LinkedList<Dec.T> args, String mid) {
     ClassBinding cb = this.table.get(current);
     cb.putm(current, ret, args, mid);
     return;
   }
 
-  public void inherit(String c)
-  {
+  public void inherit(String c) {
     ClassBinding cb = this.table.get(c);
     if (cb.visited)
       return;
@@ -66,6 +58,7 @@ public class ClassTable
         newMethods.add(t);
         continue;
       }
+      // Vtable saved new method to realize inheritance
       newMethods.set(index, t);
     }
     cb.update(newMethods);
@@ -75,14 +68,12 @@ public class ClassTable
   }
 
   // return null for non-existing keys
-  public ClassBinding get(String c)
-  {
+  public ClassBinding get(String c) {
     return this.table.get(c);
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return this.table.toString();
   }
 }
