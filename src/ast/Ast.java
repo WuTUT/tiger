@@ -221,6 +221,10 @@ public class Ast {
       public False() {
       }
 
+      public False(int lineNum) {
+        this.lineNum = lineNum;
+      }
+
       @Override
       public void accept(ast.Visitor v) {
         v.visit(this);
@@ -374,6 +378,10 @@ public class Ast {
       public This() {
       }
 
+      public This(int lineNum) {
+        this.lineNum = lineNum;
+      }
+
       @Override
       public void accept(ast.Visitor v) {
         v.visit(this);
@@ -402,6 +410,10 @@ public class Ast {
     // True
     public static class True extends T {
       public True() {
+      }
+
+      public True(int lineNum) {
+        this.lineNum = lineNum;
       }
 
       @Override
@@ -434,6 +446,14 @@ public class Ast {
         this.type = null;
       }
 
+      public Assign(String id, Exp.T exp, int lineNum, boolean isField, Type.T type) {
+        this.lineNum = lineNum;
+        this.id = id;
+        this.exp = exp;
+        this.type = type;
+        this.isField = isField;
+      }
+
       @Override
       public void accept(ast.Visitor v) {
         v.visit(this);
@@ -452,6 +472,14 @@ public class Ast {
         this.id = id;
         this.index = index;
         this.exp = exp;
+      }
+
+      public AssignArray(String id, Exp.T index, Exp.T exp, int lineNum, boolean isField) {
+        this.lineNum = lineNum;
+        this.id = id;
+        this.index = index;
+        this.exp = exp;
+        this.isField = isField;
       }
 
       @Override

@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
@@ -46,6 +47,14 @@
             "mainClass": "Tiger",
             "projectName": "tiger",
             "args": ["-elab","classTable","-elab","methodTable","./test/LinkedList.java"],
-        }
+        },
+        {
+            "type": "java",
+            "name": "Launch Tiger-opt",
+            "request": "launch",
+            "mainClass": "Tiger",
+            "projectName": "tiger",
+            "args": ["./test/DeadCode.java"],
+        },
     ]
 }

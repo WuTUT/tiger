@@ -1,50 +1,55 @@
 package ast.optimizations;
 
-public class Main
-{
+public class Main {
   public ast.Ast.Program.T program;
-  
-  public void accept(ast.Ast.Program.T ast)
-  {
-    DeadClass dceVisitor = new DeadClass();
-    control.CompilerPass deadClassPass = new control.CompilerPass(
-        "Dead class elimination", ast, dceVisitor);
-    if (control.Control.skipPass("ast.DeadClass")){
-    }else{
-      deadClassPass.doit();
-      ast = dceVisitor.program;
-    }
-    
-    DeadCode dcodeVisitor = new DeadCode();
-    control.CompilerPass deadCodePass = new control.CompilerPass(
-        "Dead code elimination", ast, dcodeVisitor);
-    if (control.Control.skipPass("ast.DeadCode")){
-    }else{
-      deadCodePass.doit();
-      ast = dcodeVisitor.program;
-    }
-    
+  private boolean ischanged = false;
 
-    AlgSimp algVisitor = new AlgSimp();
-    control.CompilerPass algPass = new control.CompilerPass(
-        "Algebraic simplification", ast, algVisitor);
-    if (control.Control.skipPass("ast.AlgSimp")){
-    }else{
-      algPass.doit();
-      ast = algVisitor.program;
-    }
+  public void accept(ast.Ast.Program.T ast) {
+    do {
+      this.ischanged = false;
+      DeadClass dceVisitor = new DeadClass();
+      control.CompilerPass deadClassPass = new control.CompilerPass("Dead class elimination", ast, dceVisitor);
+      if (control.Control.skipPass("ast.DeadClass")) {
+      } else {
+        deadClassPass.doit();
+        ast = dceVisitor.program;
+        // System.out.println(dceVisitor.ischanged);
+        this.ischanged = this.ischanged || dceVisitor.ischanged;
+      }
 
-    ConstFold cfVisitor = new ConstFold();
-    control.CompilerPass constFoldPass = new control.CompilerPass(
-        "Const folding", ast, cfVisitor);
-    if (control.Control.skipPass("ast.ConstFold")){
-    }else{
-      constFoldPass.doit();
-      ast = cfVisitor.program;
-    }    
+      DeadCode dcodeVisitor = new DeadCode();
+      control.CompilerPass deadCodePass = new control.CompilerPass("Dead code elimination", ast, dcodeVisitor);
+      if (control.Control.skipPass("ast.DeadCode")) {
+      } else {
+        deadCodePass.doit();
+        ast = dcodeVisitor.program;
+        // System.out.println(dcodeVisitor.ischanged);
+        this.ischanged = this.ischanged || dcodeVisitor.ischanged;
+      }
 
-    program = ast;
-    
+      AlgSimp algVisitor = new AlgSimp();
+      control.CompilerPass algPass = new control.CompilerPass("Algebraic simplification", ast, algVisitor);
+      if (control.Control.skipPass("ast.AlgSimp")) {
+      } else {
+        algPass.doit();
+        ast = algVisitor.program;
+        // System.out.println(algVisitor.ischanged);
+        this.ischanged = this.ischanged || algVisitor.ischanged;
+      }
+
+      ConstFold cfVisitor = new ConstFold();
+      control.CompilerPass constFoldPass = new control.CompilerPass("Const folding", ast, cfVisitor);
+      if (control.Control.skipPass("ast.ConstFold")) {
+      } else {
+        constFoldPass.doit();
+        ast = cfVisitor.program;
+        // System.out.println(cfVisitor.ischanged);
+        this.ischanged = this.ischanged || cfVisitor.ischanged;
+      }
+
+      program = ast;
+    } while (this.ischanged);
+
     return;
   }
 }

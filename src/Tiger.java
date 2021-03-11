@@ -19,7 +19,8 @@ public class Tiger {
   public ast.Ast.Program.T theAst;
 
   // lex and parse
-  private void lexAndParse(String fname) {
+  // private void lexAndParse(String fname) {// only public method can getMethod
+  public void lexAndParse(String fname) {// only public method can getMethod
     Parser parser;
 
     try {
@@ -155,7 +156,7 @@ public class Tiger {
 
     // /////////////////////////////////////////////////////////
     // normal compilation phases.
-    Program.T theAst = null;
+    // Program.T theAst = null;
 
     control.CompilerPass lexAndParsePass = new control.CompilerPass("Lex and parse", tiger, fname);
     lexAndParsePass.doitName("lexAndParse");
@@ -175,9 +176,16 @@ public class Tiger {
     // optimize the AST
     ast.optimizations.Main optAstPasses = new ast.optimizations.Main();
     control.CompilerPass optAstPass = new control.CompilerPass("Optimizing the AST", optAstPasses, theAst);
-    optAstPass.doitName("doit");
-    theAst = optAstPasses.program;
+    // optAstPass.doitName("doit");
+    optAstPass.doit();
 
+    System.out.println("before optimization:");
+    ast.PrettyPrintVisitor pp = new ast.PrettyPrintVisitor();
+    theAst.accept(pp);
+
+    theAst = optAstPasses.program;
+    System.out.println("after optimization:");
+    theAst.accept(pp);
     // code generation
     switch (control.Control.ConCodeGen.codegen) {
     case Bytecode:
