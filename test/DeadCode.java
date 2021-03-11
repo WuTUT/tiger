@@ -27,12 +27,12 @@ class Doit {
       if (false) {
         System.out.println(8);
       } else {
-        System.out.println(9);
+        System.out.println(9 - 1 + 921 + 12 - 2);
       }
       while (2 < 1) {
-        System.out.println(1);
+        System.out.println(1 + 3);
       }
-      System.out.println(10);
+      System.out.println(10 * 2 + 3);
     }
     return 0;
   }

@@ -179,13 +179,14 @@ public class Tiger {
     // optAstPass.doitName("doit");
     optAstPass.doit();
 
-    System.out.println("before optimization:");
-    ast.PrettyPrintVisitor pp = new ast.PrettyPrintVisitor();
-    theAst.accept(pp);
+    // System.out.println("before optimization:");
+    // ast.PrettyPrintVisitor pp = new ast.PrettyPrintVisitor();
+    // theAst.accept(pp);
 
     theAst = optAstPasses.program;
-    System.out.println("after optimization:");
-    theAst.accept(pp);
+    // System.out.println("after optimization:");
+    // theAst.accept(pp);
+
     // code generation
     switch (control.Control.ConCodeGen.codegen) {
     case Bytecode:

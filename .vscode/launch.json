@@ -56,5 +56,14 @@
             "projectName": "tiger",
             "args": ["./test/DeadCode.java"],
         },
+        {
+            "type": "java",
+            "name": "Launch Tiger-cfg",
+            "request": "launch",
+            "mainClass": "Tiger",
+            "projectName": "tiger",
+            "args": ["-testFac","-dump","C"],
+        },
+        
     ]
 }
