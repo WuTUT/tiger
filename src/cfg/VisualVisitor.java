@@ -222,7 +222,7 @@ public class VisualVisitor implements Visitor {
 
   @Override
   public void visit(IntArrayType t) {
-    emit("int[] ");
+    emit("int* ");
   }
 
   // dec

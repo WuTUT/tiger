@@ -311,9 +311,10 @@ public class TranslateVisitor implements codegen.C.Visitor {
   @Override
   public void visit(codegen.C.Ast.Stm.While s) {
 
-    // ****go to L2
+    // ****goto L2
     // L1:
     // ****body
+    // ****goto L2 //make Block closed
     // L2:
     // ****conditon
     // ****if oprand goto l1 else goto l3
@@ -324,6 +325,7 @@ public class TranslateVisitor implements codegen.C.Visitor {
     emit(new Goto(l2));
     emit(l1);
     s.body.accept(this);
+    emit(new Goto(l2));
     emit(l2);
     s.condition.accept(this);
     emit(new If(this.operand, l1, l3));

@@ -131,7 +131,7 @@ public class PrettyPrintVisitor implements Visitor {
   @Override
   public void visit(Print s) {
     this.printSpaces();
-    this.say("System_out_println (");
+    this.say("System_out_println(");
     s.arg.accept(this);
     this.sayln(");");
     return;
@@ -213,7 +213,7 @@ public class PrettyPrintVisitor implements Visitor {
 
   @Override
   public void visit(ArraySelect s) {
-    this.printSpaces();
+    // this.printSpaces();
     s.array.accept(this);
     this.say("[");
     s.index.accept(this);
@@ -249,7 +249,7 @@ public class PrettyPrintVisitor implements Visitor {
   // type
   @Override
   public void visit(ClassType t) {
-    this.say("struct " + t.id + " *");
+    this.say("struct " + t.id + "*");
   }
 
   @Override
@@ -259,7 +259,7 @@ public class PrettyPrintVisitor implements Visitor {
 
   @Override
   public void visit(IntArrayType t) {
-    this.say("int[]");
+    this.say("int*");
   }
 
   // dec

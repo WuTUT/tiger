@@ -7,6 +7,7 @@ import cfg.Cfg.MainMethod.MainMethodSingle;
 import cfg.Cfg.Method.MethodSingle;
 import cfg.Cfg.Operand.ArraySelect;
 import cfg.Cfg.Operand.Int;
+import cfg.Cfg.Operand.Length;
 import cfg.Cfg.Operand.Var;
 import cfg.Cfg.Program.ProgramSingle;
 import cfg.Cfg.Stm.Add;
@@ -14,8 +15,10 @@ import cfg.Cfg.Stm.And;
 import cfg.Cfg.Stm.InvokeVirtual;
 import cfg.Cfg.Stm.Lt;
 import cfg.Cfg.Stm.Move;
+import cfg.Cfg.Stm.MoveArray;
 import cfg.Cfg.Stm.NewIntArray;
 import cfg.Cfg.Stm.NewObject;
+import cfg.Cfg.Stm.Not;
 import cfg.Cfg.Stm.Print;
 import cfg.Cfg.Stm.Sub;
 import cfg.Cfg.Stm.Times;
@@ -74,6 +77,36 @@ public class AvailExp implements cfg.Visitor {
 
   @Override
   public void visit(Times s) {
+  }
+
+  @Override
+  public void visit(ArraySelect s) {
+
+  }
+
+  @Override
+  public void visit(And s) {
+
+  }
+
+  @Override
+  public void visit(NewIntArray s) {
+
+  }
+
+  @Override
+  public void visit(Length s) {
+
+  }
+
+  @Override
+  public void visit(Not s) {
+
+  }
+
+  @Override
+  public void visit(MoveArray s) {
+
   }
 
   // transfer

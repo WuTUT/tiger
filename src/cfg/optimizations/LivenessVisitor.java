@@ -11,15 +11,21 @@ import cfg.Cfg.MainMethod.MainMethodSingle;
 import cfg.Cfg.Method;
 import cfg.Cfg.Method.MethodSingle;
 import cfg.Cfg.Operand;
+import cfg.Cfg.Operand.ArraySelect;
 import cfg.Cfg.Operand.Int;
+import cfg.Cfg.Operand.Length;
 import cfg.Cfg.Operand.Var;
 import cfg.Cfg.Program.ProgramSingle;
 import cfg.Cfg.Stm;
 import cfg.Cfg.Stm.Add;
+import cfg.Cfg.Stm.And;
 import cfg.Cfg.Stm.InvokeVirtual;
 import cfg.Cfg.Stm.Lt;
 import cfg.Cfg.Stm.Move;
+import cfg.Cfg.Stm.MoveArray;
+import cfg.Cfg.Stm.NewIntArray;
 import cfg.Cfg.Stm.NewObject;
+import cfg.Cfg.Stm.Not;
 import cfg.Cfg.Stm.Print;
 import cfg.Cfg.Stm.Sub;
 import cfg.Cfg.Stm.Times;
@@ -32,8 +38,7 @@ import cfg.Cfg.Type.IntArrayType;
 import cfg.Cfg.Type.IntType;
 import cfg.Cfg.Vtable.VtableSingle;
 
-public class LivenessVisitor implements cfg.Visitor
-{
+public class LivenessVisitor implements cfg.Visitor {
   // gen, kill for one statement
   private HashSet<String> oneStmGen;
   private HashSet<String> oneStmKill;
@@ -68,15 +73,13 @@ public class LivenessVisitor implements cfg.Visitor
 
   // As you will walk the tree for many times, so
   // it will be useful to recored which is which:
-  enum Liveness_Kind_t
-  {
+  enum Liveness_Kind_t {
     None, StmGenKill, BlockGenKill, BlockInOut, StmInOut,
   }
 
   private Liveness_Kind_t kind = Liveness_Kind_t.None;
 
-  public LivenessVisitor()
-  {
+  public LivenessVisitor() {
     this.oneStmGen = new HashSet<>();
     this.oneStmKill = new java.util.HashSet<>();
 
@@ -107,29 +110,25 @@ public class LivenessVisitor implements cfg.Visitor
   // /////////////////////////////////////////////////////
   // utilities
 
-  private java.util.HashSet<String> getOneStmGenAndClear()
-  {
+  private java.util.HashSet<String> getOneStmGenAndClear() {
     java.util.HashSet<String> temp = this.oneStmGen;
     this.oneStmGen = new java.util.HashSet<>();
     return temp;
   }
 
-  private java.util.HashSet<String> getOneStmKillAndClear()
-  {
+  private java.util.HashSet<String> getOneStmKillAndClear() {
     java.util.HashSet<String> temp = this.oneStmKill;
     this.oneStmKill = new java.util.HashSet<>();
     return temp;
   }
 
-  private java.util.HashSet<String> getOneTransferGenAndClear()
-  {
+  private java.util.HashSet<String> getOneTransferGenAndClear() {
     java.util.HashSet<String> temp = this.oneTransferGen;
     this.oneTransferGen = new java.util.HashSet<>();
     return temp;
   }
 
-  private java.util.HashSet<String> getOneTransferKillAndClear()
-  {
+  private java.util.HashSet<String> getOneTransferKillAndClear() {
     java.util.HashSet<String> temp = this.oneTransferKill;
     this.oneTransferKill = new java.util.HashSet<>();
     return temp;
@@ -138,22 +137,19 @@ public class LivenessVisitor implements cfg.Visitor
   // /////////////////////////////////////////////////////
   // operand
   @Override
-  public void visit(Int operand)
-  {
+  public void visit(Int operand) {
     return;
   }
 
   @Override
-  public void visit(Var operand)
-  {
+  public void visit(Var operand) {
     this.oneStmGen.add(operand.id);
     return;
   }
 
   // statements
   @Override
-  public void visit(Add s)
-  {
+  public void visit(Add s) {
     this.oneStmKill.add(s.dst);
     // Invariant: accept() of operand modifies "gen"
     s.left.accept(this);
@@ -162,8 +158,7 @@ public class LivenessVisitor implements cfg.Visitor
   }
 
   @Override
-  public void visit(InvokeVirtual s)
-  {
+  public void visit(InvokeVirtual s) {
     this.oneStmKill.add(s.dst);
     this.oneStmGen.add(s.obj);
     for (Operand.T arg : s.args) {
@@ -173,8 +168,7 @@ public class LivenessVisitor implements cfg.Visitor
   }
 
   @Override
-  public void visit(Lt s)
-  {
+  public void visit(Lt s) {
     this.oneStmKill.add(s.dst);
     // Invariant: accept() of operand modifies "gen"
     s.left.accept(this);
@@ -183,8 +177,7 @@ public class LivenessVisitor implements cfg.Visitor
   }
 
   @Override
-  public void visit(Move s)
-  {
+  public void visit(Move s) {
     this.oneStmKill.add(s.dst);
     // Invariant: accept() of operand modifies "gen"
     s.src.accept(this);
@@ -192,22 +185,19 @@ public class LivenessVisitor implements cfg.Visitor
   }
 
   @Override
-  public void visit(NewObject s)
-  {
+  public void visit(NewObject s) {
     this.oneStmKill.add(s.dst);
     return;
   }
 
   @Override
-  public void visit(Print s)
-  {
+  public void visit(Print s) {
     s.arg.accept(this);
     return;
   }
 
   @Override
-  public void visit(Sub s)
-  {
+  public void visit(Sub s) {
     this.oneStmKill.add(s.dst);
     // Invariant: accept() of operand modifies "gen"
     s.left.accept(this);
@@ -216,33 +206,59 @@ public class LivenessVisitor implements cfg.Visitor
   }
 
   @Override
-  public void visit(Times s)
-  {
+  public void visit(Times s) {
     this.oneStmKill.add(s.dst);
     // Invariant: accept() of operand modifies "gen"
     s.left.accept(this);
     s.right.accept(this);
     return;
+  }
+
+  @Override
+  public void visit(ArraySelect s) {
+
+  }
+
+  @Override
+  public void visit(And s) {
+
+  }
+
+  @Override
+  public void visit(NewIntArray s) {
+
+  }
+
+  @Override
+  public void visit(Length s) {
+
+  }
+
+  @Override
+  public void visit(Not s) {
+
+  }
+
+  @Override
+  public void visit(MoveArray s) {
+
   }
 
   // transfer
   @Override
-  public void visit(If s)
-  {
+  public void visit(If s) {
     // Invariant: accept() of operand modifies "gen"
     s.operand.accept(this);
     return;
   }
 
   @Override
-  public void visit(Goto s)
-  {
+  public void visit(Goto s) {
     return;
   }
 
   @Override
-  public void visit(Return s)
-  {
+  public void visit(Return s) {
     // Invariant: accept() of operand modifies "gen"
     s.operand.accept(this);
     return;
@@ -250,32 +266,27 @@ public class LivenessVisitor implements cfg.Visitor
 
   // type
   @Override
-  public void visit(ClassType t)
-  {
+  public void visit(ClassType t) {
   }
 
   @Override
-  public void visit(IntType t)
-  {
+  public void visit(IntType t) {
   }
 
   @Override
-  public void visit(IntArrayType t)
-  {
+  public void visit(IntArrayType t) {
   }
 
   // dec
   @Override
-  public void visit(DecSingle d)
-  {
+  public void visit(DecSingle d) {
   }
 
   // utility functions:
-  private void calculateStmTransferGenKill(BlockSingle b)
-  {
+  private void calculateStmTransferGenKill(BlockSingle b) {
     for (Stm.T s : b.stms) {
       this.oneStmGen = new java.util.HashSet<>();
-      this.oneStmKill = new java.util.HashSet<>();      
+      this.oneStmKill = new java.util.HashSet<>();
       s.accept(this);
       this.stmGen.put(s, this.oneStmGen);
       this.stmKill.put(s, this.oneStmKill);
@@ -314,8 +325,7 @@ public class LivenessVisitor implements cfg.Visitor
 
   // block
   @Override
-  public void visit(BlockSingle b)
-  {
+  public void visit(BlockSingle b) {
     switch (this.kind) {
     case StmGenKill:
       calculateStmTransferGenKill(b);
@@ -328,8 +338,7 @@ public class LivenessVisitor implements cfg.Visitor
 
   // method
   @Override
-  public void visit(MethodSingle m)
-  {
+  public void visit(MethodSingle m) {
     // Four steps:
     // Step 1: calculate the "gen" and "kill" sets for each
     // statement and transfer
@@ -357,8 +366,7 @@ public class LivenessVisitor implements cfg.Visitor
   }
 
   @Override
-  public void visit(MainMethodSingle m)
-  {
+  public void visit(MainMethodSingle m) {
     // Four steps:
     // Step 1: calculate the "gen" and "kill" sets for each
     // statement and transfer
@@ -386,20 +394,17 @@ public class LivenessVisitor implements cfg.Visitor
 
   // vtables
   @Override
-  public void visit(VtableSingle v)
-  {
+  public void visit(VtableSingle v) {
   }
 
   // class
   @Override
-  public void visit(ClassSingle c)
-  {
+  public void visit(ClassSingle c) {
   }
 
   // program
   @Override
-  public void visit(ProgramSingle p)
-  {
+  public void visit(ProgramSingle p) {
     p.mainMethod.accept(this);
     for (Method.T mth : p.methods) {
       mth.accept(this);

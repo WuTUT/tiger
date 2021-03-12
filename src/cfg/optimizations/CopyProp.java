@@ -5,15 +5,21 @@ import cfg.Cfg.Class.ClassSingle;
 import cfg.Cfg.Dec.DecSingle;
 import cfg.Cfg.MainMethod.MainMethodSingle;
 import cfg.Cfg.Method.MethodSingle;
+import cfg.Cfg.Operand.ArraySelect;
 import cfg.Cfg.Operand.Int;
+import cfg.Cfg.Operand.Length;
 import cfg.Cfg.Operand.Var;
 import cfg.Cfg.Program;
 import cfg.Cfg.Program.ProgramSingle;
 import cfg.Cfg.Stm.Add;
+import cfg.Cfg.Stm.And;
 import cfg.Cfg.Stm.InvokeVirtual;
 import cfg.Cfg.Stm.Lt;
 import cfg.Cfg.Stm.Move;
+import cfg.Cfg.Stm.MoveArray;
+import cfg.Cfg.Stm.NewIntArray;
 import cfg.Cfg.Stm.NewObject;
+import cfg.Cfg.Stm.Not;
 import cfg.Cfg.Stm.Print;
 import cfg.Cfg.Stm.Sub;
 import cfg.Cfg.Stm.Times;
@@ -25,139 +31,144 @@ import cfg.Cfg.Type.IntArrayType;
 import cfg.Cfg.Type.IntType;
 import cfg.Cfg.Vtable.VtableSingle;
 
-public class CopyProp implements cfg.Visitor
-{
+public class CopyProp implements cfg.Visitor {
   public Program.T program;
-  
-  public CopyProp()
-  {
+
+  public CopyProp() {
     this.program = null;
-  } 
+  }
 
   // /////////////////////////////////////////////////////
   // operand
   @Override
-  public void visit(Int operand)
-  {
+  public void visit(Int operand) {
   }
 
   @Override
-  public void visit(Var operand)
-  {
+  public void visit(Var operand) {
   }
 
   // statements
   @Override
-  public void visit(Add s)
-  {
+  public void visit(Add s) {
   }
 
   @Override
-  public void visit(InvokeVirtual s)
-  {
+  public void visit(InvokeVirtual s) {
   }
 
   @Override
-  public void visit(Lt s)
-  {
+  public void visit(Lt s) {
   }
 
   @Override
-  public void visit(Move s)
-  {
+  public void visit(Move s) {
   }
 
   @Override
-  public void visit(NewObject s)
-  {
+  public void visit(NewObject s) {
   }
 
   @Override
-  public void visit(Print s)
-  {
+  public void visit(Print s) {
   }
 
   @Override
-  public void visit(Sub s)
-  {
+  public void visit(Sub s) {
   }
 
   @Override
-  public void visit(Times s)
-  {
+  public void visit(Times s) {
+  }
+
+  @Override
+  public void visit(ArraySelect s) {
+
+  }
+
+  @Override
+  public void visit(And s) {
+
+  }
+
+  @Override
+  public void visit(NewIntArray s) {
+
+  }
+
+  @Override
+  public void visit(Length s) {
+
+  }
+
+  @Override
+  public void visit(Not s) {
+
+  }
+
+  @Override
+  public void visit(MoveArray s) {
+
   }
 
   // transfer
   @Override
-  public void visit(If s)
-  {
+  public void visit(If s) {
   }
 
   @Override
-  public void visit(Goto s)
-  {
+  public void visit(Goto s) {
   }
 
   @Override
-  public void visit(Return s)
-  {
+  public void visit(Return s) {
   }
 
   // type
   @Override
-  public void visit(ClassType t)
-  {
+  public void visit(ClassType t) {
   }
 
   @Override
-  public void visit(IntType t)
-  {
+  public void visit(IntType t) {
   }
 
   @Override
-  public void visit(IntArrayType t)
-  {
+  public void visit(IntArrayType t) {
   }
 
   // dec
   @Override
-  public void visit(DecSingle d)
-  {
+  public void visit(DecSingle d) {
   }
 
   // block
   @Override
-  public void visit(BlockSingle b)
-  {
+  public void visit(BlockSingle b) {
   }
 
   // method
   @Override
-  public void visit(MethodSingle m)
-  {
+  public void visit(MethodSingle m) {
   }
 
   @Override
-  public void visit(MainMethodSingle m)
-  {
+  public void visit(MainMethodSingle m) {
   }
 
   // vtables
   @Override
-  public void visit(VtableSingle v)
-  {
+  public void visit(VtableSingle v) {
   }
 
   // class
   @Override
-  public void visit(ClassSingle c)
-  {
+  public void visit(ClassSingle c) {
   }
 
   // program
   @Override
-  public void visit(ProgramSingle p)
-  {
+  public void visit(ProgramSingle p) {
     this.program = p;
   }
 

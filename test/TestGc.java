@@ -27,7 +27,7 @@ class AA {
         s = new A();
         ss1 = new A();
         sa = 2;
-        // p = new int[11];
+        p = new int[11];
         return 2;
     }
 

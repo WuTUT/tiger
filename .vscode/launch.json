@@ -63,7 +63,7 @@
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["./test/TestGc.java","-dump","C"],
+            "args": ["./test/TreeVisitor.java","-dump","C"],
         },
         {
             "type": "java",

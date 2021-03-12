@@ -323,7 +323,7 @@ public class ElaboratorVisitor implements ast.Visitor {
     }
     if (type == null) {
       System.out.println("Error: variable " + s.id + " not declared at line: " + s.lineNum);
-    } else if (type.toString().equals("@int[]")) {
+    } else if (!type.toString().equals("@int[]")) {
       System.out.println("Error: Assign Array in minijava must be int array at line: " + s.lineNum);
       // type= new Type.IntArray();
     }
