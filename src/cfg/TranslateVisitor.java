@@ -16,15 +16,22 @@ import cfg.Cfg.Method.MethodSingle;
 import cfg.Cfg.Operand;
 import cfg.Cfg.Operand.Int;
 import cfg.Cfg.Operand.Var;
+import cfg.Cfg.Operand.ArraySelect;
+import cfg.Cfg.Operand.Length;
 import cfg.Cfg.Program;
 import cfg.Cfg.Program.ProgramSingle;
 import cfg.Cfg.Stm;
 import cfg.Cfg.Stm.InvokeVirtual;
 import cfg.Cfg.Stm.Lt;
+import cfg.Cfg.Stm.Not;
 import cfg.Cfg.Stm.Move;
+import cfg.Cfg.Stm.MoveArray;
 import cfg.Cfg.Stm.NewObject;
+import cfg.Cfg.Stm.NewIntArray;
 import cfg.Cfg.Stm.Print;
 import cfg.Cfg.Stm.Sub;
+import cfg.Cfg.Stm.Add;
+import cfg.Cfg.Stm.And;
 import cfg.Cfg.Stm.Times;
 import cfg.Cfg.Transfer;
 import cfg.Cfg.Transfer.Goto;
@@ -33,13 +40,13 @@ import cfg.Cfg.Transfer.Return;
 import cfg.Cfg.Type;
 import cfg.Cfg.Type.ClassType;
 import cfg.Cfg.Type.IntType;
+import cfg.Cfg.Type.IntArrayType;
 import cfg.Cfg.Vtable;
 import cfg.Cfg.Vtable.VtableSingle;
 
 // Traverse the C AST, and generate
 // a control-flow graph.
-public class TranslateVisitor implements codegen.C.Visitor
-{
+public class TranslateVisitor implements codegen.C.Visitor {
   private String classId;
   private Type.T type; // type after translation
   private Operand.T operand;
@@ -54,8 +61,7 @@ public class TranslateVisitor implements codegen.C.Visitor
   private MainMethod.T mainMethod;
   public Program.T program;
 
-  public TranslateVisitor()
-  {
+  public TranslateVisitor() {
     this.classId = null;
     this.type = null;
     this.dec = null;
@@ -70,8 +76,7 @@ public class TranslateVisitor implements codegen.C.Visitor
 
   // /////////////////////////////////////////////////////
   // utility functions
-  private java.util.LinkedList<Block.T> cookBlocks()
-  {
+  private java.util.LinkedList<Block.T> cookBlocks() {
     java.util.LinkedList<Block.T> blocks = new java.util.LinkedList<Block.T>();
 
     int i = 0;
@@ -97,21 +102,18 @@ public class TranslateVisitor implements codegen.C.Visitor
     return blocks;
   }
 
-  private void emit(Object obj)
-  {
+  private void emit(Object obj) {
     this.stmOrTransfer.add(obj);
   }
 
-  private String genVar()
-  {
+  private String genVar() {
     String fresh = util.Temp.next();
     DecSingle dec = new DecSingle(new IntType(), fresh);
     this.newLocals.add(dec);
     return fresh;
   }
 
-  private String genVar(Type.T ty)
-  {
+  private String genVar(Type.T ty) {
     String fresh = util.Temp.next();
     DecSingle dec = new DecSingle(ty, fresh);
     this.newLocals.add(dec);
@@ -121,23 +123,37 @@ public class TranslateVisitor implements codegen.C.Visitor
   // /////////////////////////////////////////////////////
   // expressions
   @Override
-  public void visit(codegen.C.Ast.Exp.Add e)
-  {
+  public void visit(codegen.C.Ast.Exp.Add e) {
+    String dst = genVar();
+    e.left.accept(this);
+    Operand.T left = this.operand;
+    e.right.accept(this);
+    emit(new Add(dst, null, left, this.operand));
+    this.operand = new Var(dst);
+    return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.And e)
-  {
+  public void visit(codegen.C.Ast.Exp.And e) {
+    String dst = genVar();
+    e.left.accept(this);
+    Operand.T left = this.operand;
+    e.right.accept(this);
+    emit(new And(dst, null, left, this.operand));
+    this.operand = new Var(dst);
+    return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.ArraySelect e)
-  {
+  public void visit(codegen.C.Ast.Exp.ArraySelect e) {
+    e.array.accept(this);
+    Operand.T array = this.operand;
+    e.index.accept(this);
+    this.operand = new ArraySelect(array, this.operand);
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Call e)
-  {
+  public void visit(codegen.C.Ast.Exp.Call e) {
     e.retType.accept(this);
     String dst = genVar(this.type);
     String obj = null;
@@ -161,20 +177,19 @@ public class TranslateVisitor implements codegen.C.Visitor
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Id e)
-  {
+  public void visit(codegen.C.Ast.Exp.Id e) {
     this.operand = new Var(e.id);
     return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Length e)
-  {
+  public void visit(codegen.C.Ast.Exp.Length e) {
+    e.array.accept(this);
+    this.operand = new Length(this.operand);
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Lt e)
-  {
+  public void visit(codegen.C.Ast.Exp.Lt e) {
     String dst = genVar();
     e.left.accept(this);
     Operand.T left = this.operand;
@@ -185,13 +200,18 @@ public class TranslateVisitor implements codegen.C.Visitor
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.NewIntArray e)
-  {
+  public void visit(codegen.C.Ast.Exp.NewIntArray e) {
+    String dst = genVar(new IntArrayType());
+
+    e.exp.accept(this);
+
+    emit(new NewIntArray(dst, this.operand));
+    this.operand = new Var(dst);
+    return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.NewObject e)
-  {
+  public void visit(codegen.C.Ast.Exp.NewObject e) {
     String dst = genVar(new ClassType(e.id));
     emit(new NewObject(dst, e.id));
     this.operand = new Var(dst);
@@ -199,20 +219,21 @@ public class TranslateVisitor implements codegen.C.Visitor
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Not e)
-  {
+  public void visit(codegen.C.Ast.Exp.Not e) {
+    String dst = genVar();
+    e.exp.accept(this);
+    emit(new Not(dst, null, this.operand));
+    this.operand = new Var(dst);
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Num e)
-  {
+  public void visit(codegen.C.Ast.Exp.Num e) {
     this.operand = new Int(e.num);
     return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Sub e)
-  {
+  public void visit(codegen.C.Ast.Exp.Sub e) {
     String dst = genVar();
     e.left.accept(this);
     Operand.T left = this.operand;
@@ -223,15 +244,13 @@ public class TranslateVisitor implements codegen.C.Visitor
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.This e)
-  {
+  public void visit(codegen.C.Ast.Exp.This e) {
     this.operand = new Var("this");
     return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Exp.Times e)
-  {
+  public void visit(codegen.C.Ast.Exp.Times e) {
     String dst = genVar();
     e.left.accept(this);
     Operand.T left = this.operand;
@@ -243,26 +262,32 @@ public class TranslateVisitor implements codegen.C.Visitor
 
   // statements
   @Override
-  public void visit(codegen.C.Ast.Stm.Assign s)
-  {
+  public void visit(codegen.C.Ast.Stm.Assign s) {
     s.exp.accept(this);
     emit(new Move(s.id, null, this.operand));
     return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Stm.AssignArray s)
-  {
+  public void visit(codegen.C.Ast.Stm.AssignArray s) {
+
+    s.index.accept(this);
+    Operand.T index = this.operand;
+    s.exp.accept(this);
+    Operand.T exp = this.operand;
+    emit(new MoveArray(s.id, null, index, exp));
+    return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Stm.Block s)
-  {
+  public void visit(codegen.C.Ast.Stm.Block s) {
+    for (codegen.C.Ast.Stm.T stm : s.stms) {
+      stm.accept(this);
+    }
   }
 
   @Override
-  public void visit(codegen.C.Ast.Stm.If s)
-  {
+  public void visit(codegen.C.Ast.Stm.If s) {
     util.Label tl = new util.Label(), fl = new util.Label(), el = new util.Label();
     s.condition.accept(this);
     emit(new If(this.operand, tl, fl));
@@ -277,40 +302,53 @@ public class TranslateVisitor implements codegen.C.Visitor
   }
 
   @Override
-  public void visit(codegen.C.Ast.Stm.Print s)
-  {
+  public void visit(codegen.C.Ast.Stm.Print s) {
     s.exp.accept(this);
     emit(new Print(this.operand));
     return;
   }
 
   @Override
-  public void visit(codegen.C.Ast.Stm.While s)
-  {
+  public void visit(codegen.C.Ast.Stm.While s) {
+
+    // ****go to L2
+    // L1:
+    // ****body
+    // L2:
+    // ****conditon
+    // ****if oprand goto l1 else goto l3
+    // L3:
+    // ****.....
+
+    util.Label l1 = new util.Label(), l2 = new util.Label(), l3 = new util.Label();
+    emit(new Goto(l2));
+    emit(l1);
+    s.body.accept(this);
+    emit(l2);
+    s.condition.accept(this);
+    emit(new If(this.operand, l1, l3));
+    emit(l3);
   }
 
   // type
   @Override
-  public void visit(codegen.C.Ast.Type.ClassType t)
-  {
+  public void visit(codegen.C.Ast.Type.ClassType t) {
     this.type = new ClassType(t.id);
   }
 
   @Override
-  public void visit(codegen.C.Ast.Type.Int t)
-  {
+  public void visit(codegen.C.Ast.Type.Int t) {
     this.type = new IntType();
   }
 
   @Override
-  public void visit(codegen.C.Ast.Type.IntArray t)
-  {
+  public void visit(codegen.C.Ast.Type.IntArray t) {
+    this.type = new IntArrayType();
   }
 
   // dec
   @Override
-  public void visit(codegen.C.Ast.Dec.DecSingle d)
-  {
+  public void visit(codegen.C.Ast.Dec.DecSingle d) {
     d.type.accept(this);
     this.dec = new DecSingle(this.type, d.id);
     return;
@@ -318,8 +356,7 @@ public class TranslateVisitor implements codegen.C.Visitor
 
   // vtable
   @Override
-  public void visit(codegen.C.Ast.Vtable.VtableSingle v)
-  {
+  public void visit(codegen.C.Ast.Vtable.VtableSingle v) {
     java.util.LinkedList<cfg.Ftuple> newTuples = new java.util.LinkedList<cfg.Ftuple>();
     for (codegen.C.Ftuple t : v.ms) {
       t.ret.accept(this);
@@ -337,8 +374,7 @@ public class TranslateVisitor implements codegen.C.Visitor
 
   // class
   @Override
-  public void visit(codegen.C.Ast.Class.ClassSingle c)
-  {
+  public void visit(codegen.C.Ast.Class.ClassSingle c) {
     java.util.LinkedList<cfg.Tuple> newTuples = new java.util.LinkedList<cfg.Tuple>();
     for (codegen.C.Tuple t : c.decs) {
       t.type.accept(this);
@@ -350,8 +386,7 @@ public class TranslateVisitor implements codegen.C.Visitor
 
   // method
   @Override
-  public void visit(codegen.C.Ast.Method.MethodSingle m)
-  {
+  public void visit(codegen.C.Ast.Method.MethodSingle m) {
     this.newLocals = new java.util.LinkedList<>();
 
     m.retType.accept(this);
@@ -386,15 +421,13 @@ public class TranslateVisitor implements codegen.C.Visitor
     for (Dec.T d : this.newLocals)
       locals.add(d);
 
-    this.method = new MethodSingle(retType, m.id, m.classId, newFormals,
-        locals, blocks, entry, null, null);
+    this.method = new MethodSingle(retType, m.id, m.classId, newFormals, locals, blocks, entry, null, null);
     return;
   }
 
   // main method
   @Override
-  public void visit(codegen.C.Ast.MainMethod.MainMethodSingle m)
-  {
+  public void visit(codegen.C.Ast.MainMethod.MainMethodSingle m) {
     this.newLocals = new java.util.LinkedList<>();
 
     java.util.LinkedList<Dec.T> locals = new LinkedList<Dec.T>();
@@ -419,8 +452,7 @@ public class TranslateVisitor implements codegen.C.Visitor
 
   // program
   @Override
-  public void visit(codegen.C.Ast.Program.ProgramSingle p)
-  {
+  public void visit(codegen.C.Ast.Program.ProgramSingle p) {
     java.util.LinkedList<Class.T> newClasses = new LinkedList<Class.T>();
     for (codegen.C.Ast.Class.T c : p.classes) {
       c.accept(this);
@@ -442,8 +474,7 @@ public class TranslateVisitor implements codegen.C.Visitor
     p.mainMethod.accept(this);
     MainMethod.T newMainMethod = this.mainMethod;
 
-    this.program = new ProgramSingle(newClasses, newVtable, newMethods,
-        newMainMethod);
+    this.program = new ProgramSingle(newClasses, newVtable, newMethods, newMainMethod);
     return;
   }
 }

@@ -78,6 +78,11 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return type.toString() + " " + id + ";";
+      }
     }
 
   }// end of dec
@@ -99,6 +104,11 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return String.valueOf(i);
+      }
     }
 
     public static class Var extends T {
@@ -111,6 +121,51 @@ public class Cfg {
       @Override
       public void accept(Visitor v) {
         v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return id;
+      }
+    }
+
+    public static class ArraySelect extends T {
+
+      public T array;
+      public T index;
+
+      public ArraySelect(T array, T index) {
+        this.array = array;
+        this.index = index;
+      }
+
+      @Override
+      public void accept(Visitor v) {
+        v.visit(this);
+        return;
+      }
+
+      @Override
+      public String toString() {
+        return array.toString() + "[" + index.toString() + "]";
+      }
+    }
+
+    public static class Length extends T {
+      public Operand.T array;
+
+      public Length(Operand.T array) {
+        this.array = array;
+      }
+
+      @Override
+      public void accept(Visitor v) {
+        v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return array.toString() + ".length";
       }
     }
 
@@ -140,6 +195,11 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return dst + " = " + left.toString() + " + " + right.toString() + ";";
+      }
     }
 
     public static class InvokeVirtual extends T {
@@ -159,6 +219,20 @@ public class Cfg {
       @Override
       public void accept(Visitor v) {
         v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        StringBuilder sb = new StringBuilder(dst + " = " + obj + "." + f + "(");
+        for (Operand.T arg : args) {
+          sb.append(arg.toString());
+          if (arg != args.getLast()) {
+            sb.append(", ");
+          }
+
+        }
+        sb.append(");");
+        return sb.toString();
       }
     }
 
@@ -180,6 +254,36 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return dst + " = " + left.toString() + " < " + right.toString() + ";";
+      }
+    }
+
+    public static class And extends T {
+      public String dst;
+      // type of the destination variable
+      public Type.T ty;
+      public Operand.T left;
+      public Operand.T right;
+
+      public And(String dst, Type.T ty, Operand.T left, Operand.T right) {
+        this.dst = dst;
+        this.ty = ty;
+        this.left = left;
+        this.right = right;
+      }
+
+      @Override
+      public void accept(Visitor v) {
+        v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return dst + " = " + left.toString() + " && " + right.toString() + ";";
+      }
     }
 
     public static class Move extends T {
@@ -198,6 +302,59 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return dst + " = " + src.toString() + ";";
+      }
+    }
+
+    public static class MoveArray extends T {
+      public String dst;
+      // type of the destination variable
+      public Operand.T index;
+      public Type.T ty;
+      public Operand.T src;
+
+      public MoveArray(String dst, Type.T ty, Operand.T index, Operand.T src) {
+        this.dst = dst;
+        this.ty = ty;
+        this.index = index;
+        this.src = src;
+      }
+
+      @Override
+      public void accept(Visitor v) {
+        v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return dst + "[" + index.toString() + "]" + " = " + src.toString() + ";";
+      }
+    }
+
+    public static class Not extends T {
+      public String dst;
+      // type of the destination variable
+      public Type.T ty;
+      public Operand.T src;
+
+      public Not(String dst, Type.T ty, Operand.T src) {
+        this.dst = dst;
+        this.ty = ty;
+        this.src = src;
+      }
+
+      @Override
+      public void accept(Visitor v) {
+        v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return dst + " = !" + src.toString() + ";";
+      }
     }
 
     public static class NewObject extends T {
@@ -214,6 +371,32 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return dst + " = new " + c + "();";
+      }
+    }
+
+    public static class NewIntArray extends T {
+      public String dst;
+      // type of the destination variable
+      public Operand.T len;
+
+      public NewIntArray(String dst, Operand.T len) {
+        this.dst = dst;
+        this.len = len;
+      }
+
+      @Override
+      public void accept(Visitor v) {
+        v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return dst + " = new int[" + len.toString() + "];";
+      }
     }
 
     public static class Print extends T {
@@ -226,6 +409,11 @@ public class Cfg {
       @Override
       public void accept(Visitor v) {
         v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return "System.out.println(" + arg.toString() + ");";
       }
     }
 
@@ -247,6 +435,11 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return dst + " = " + left.toString() + " - " + right.toString();
+      }
     }
 
     public static class Times extends T {
@@ -266,6 +459,11 @@ public class Cfg {
       @Override
       public void accept(Visitor v) {
         v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return dst + " = " + left.toString() + " * " + right.toString() + ";";
       }
     }
 
@@ -288,6 +486,11 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return "goto " + label.toString() + ";\n";
+      }
     }
 
     public static class If extends T {
@@ -305,6 +508,11 @@ public class Cfg {
       public void accept(Visitor v) {
         v.visit(this);
       }
+
+      @Override
+      public String toString() {
+        return "if (" + operand.toString() + ") then " + truee.toString() + "else " + falsee.toString() + ";\n";
+      }
     }
 
     public static class Return extends T {
@@ -317,6 +525,11 @@ public class Cfg {
       @Override
       public void accept(Visitor v) {
         v.visit(this);
+      }
+
+      @Override
+      public String toString() {
+        return "return " + operand.toString() + ";\n";
       }
     }
 
@@ -356,8 +569,10 @@ public class Cfg {
         StringBuffer strb = new StringBuffer();
         strb.append(this.label.toString() + ":\\n");
         // Lab5. Your code here:
-        strb.append("Your code here:\\n");
-
+        for (Stm.T stm : stms) {
+          strb.append(stm.toString() + "\n");
+        }
+        strb.append(transfer.toString());
         return strb.toString();
       }
 

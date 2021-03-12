@@ -6,13 +6,19 @@ import cfg.Cfg.Dec.DecSingle;
 import cfg.Cfg.MainMethod.MainMethodSingle;
 import cfg.Cfg.Method.MethodSingle;
 import cfg.Cfg.Operand.Int;
+import cfg.Cfg.Operand.Length;
 import cfg.Cfg.Operand.Var;
+import cfg.Cfg.Operand.ArraySelect;
 import cfg.Cfg.Program.ProgramSingle;
 import cfg.Cfg.Stm.Add;
+import cfg.Cfg.Stm.And;
 import cfg.Cfg.Stm.InvokeVirtual;
 import cfg.Cfg.Stm.Lt;
 import cfg.Cfg.Stm.Move;
+import cfg.Cfg.Stm.MoveArray;
+import cfg.Cfg.Stm.NewIntArray;
 import cfg.Cfg.Stm.NewObject;
+import cfg.Cfg.Stm.Not;
 import cfg.Cfg.Stm.Print;
 import cfg.Cfg.Stm.Sub;
 import cfg.Cfg.Stm.Times;
@@ -24,12 +30,13 @@ import cfg.Cfg.Type.IntArrayType;
 import cfg.Cfg.Type.IntType;
 import cfg.Cfg.Vtable.VtableSingle;
 
-public interface Visitor
-{
+public interface Visitor {
   // operand
   public void visit(Int o);
 
   public void visit(Var o);
+
+  public void visit(ArraySelect o);
 
   // type
   public void visit(ClassType t);
@@ -51,14 +58,18 @@ public interface Visitor
   // statement:
   public void visit(Add m);
 
+  public void visit(And m);
+
   public void visit(InvokeVirtual m);
 
   public void visit(Lt m);
 
   public void visit(Move m);
-  
+
   public void visit(NewObject m);
-  
+
+  public void visit(NewIntArray newIntArray);
+
   public void visit(Print m);
 
   public void visit(Sub m);
@@ -82,4 +93,11 @@ public interface Visitor
 
   // program
   public void visit(ProgramSingle p);
+
+  public void visit(Length length);
+
+  public void visit(Not not);
+
+  public void visit(MoveArray moveArray);
+
 }

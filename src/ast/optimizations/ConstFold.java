@@ -141,6 +141,7 @@ public class ConstFold implements ast.Visitor {
     Call cl = new Call(exp, e.id, args, e.lineNum);
     cl.rt = this.type;
     cl.at = at;
+    cl.type = e.type;
     this.exp = cl;
     return;
   }

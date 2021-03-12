@@ -206,6 +206,15 @@ public class Tiger {
       codegen.C.PrettyPrintVisitor ppc = new codegen.C.PrettyPrintVisitor();
       control.CompilerPass ppCCodePass = new control.CompilerPass("C code printing", cAst, ppc);
       ppCCodePass.doit();
+      // temp add
+      // translation to control-flow graph
+      cfg.TranslateVisitor transCfg = new cfg.TranslateVisitor();
+      control.CompilerPass genCfgCodePass = new control.CompilerPass("Control-flow graph generation", cAst, transCfg);
+      genCfgCodePass.doit();
+      cfg.Cfg.Program.T cfgAst = transCfg.program;
+      cfg.PrettyPrintVisitor ppCfg = new cfg.PrettyPrintVisitor();
+      control.CompilerPass ppCfgCodePass = new control.CompilerPass("C code printing", cfgAst, ppCfg);
+      ppCfgCodePass.doit();
       break;
     case Dalvik:
       codegen.dalvik.TranslateVisitor transDalvik = new codegen.dalvik.TranslateVisitor();
@@ -222,7 +231,9 @@ public class Tiger {
       break;
     default:
       break;
+
     }
+
     return;
   }
 

@@ -9,14 +9,20 @@ import cfg.Cfg.Dec.DecSingle;
 import cfg.Cfg.MainMethod.MainMethodSingle;
 import cfg.Cfg.Method.MethodSingle;
 import cfg.Cfg.Operand;
+import cfg.Cfg.Operand.ArraySelect;
 import cfg.Cfg.Operand.Int;
+import cfg.Cfg.Operand.Length;
 import cfg.Cfg.Operand.Var;
 import cfg.Cfg.Program.ProgramSingle;
 import cfg.Cfg.Stm.Add;
+import cfg.Cfg.Stm.And;
 import cfg.Cfg.Stm.InvokeVirtual;
 import cfg.Cfg.Stm.Lt;
 import cfg.Cfg.Stm.Move;
+import cfg.Cfg.Stm.MoveArray;
+import cfg.Cfg.Stm.NewIntArray;
 import cfg.Cfg.Stm.NewObject;
+import cfg.Cfg.Stm.Not;
 import cfg.Cfg.Stm.Print;
 import cfg.Cfg.Stm.Sub;
 import cfg.Cfg.Stm.Times;
@@ -29,18 +35,15 @@ import cfg.Cfg.Type.IntArrayType;
 import cfg.Cfg.Type.IntType;
 import cfg.Cfg.Vtable.VtableSingle;
 
-public class VisualVisitor implements Visitor
-{
+public class VisualVisitor implements Visitor {
   public StringBuffer strb;
 
-  public VisualVisitor()
-  {
+  public VisualVisitor() {
     this.strb = new StringBuffer();
   }
 
   // ///////////////////////////////////////////////////
-  private void emit(String s)
-  {
+  private void emit(String s) {
     strb.append(s);
     return;
   }
@@ -48,21 +51,18 @@ public class VisualVisitor implements Visitor
   // /////////////////////////////////////////////////////
   // operand
   @Override
-  public void visit(Int operand)
-  {
+  public void visit(Int operand) {
     emit(new Integer(operand.i).toString());
   }
 
   @Override
-  public void visit(Var operand)
-  {
+  public void visit(Var operand) {
     emit(operand.id);
   }
 
   // statements
   @Override
-  public void visit(Add s)
-  {
+  public void visit(Add s) {
     emit(s.dst + " = ");
     s.left.accept(this);
     emit(" + ");
@@ -72,8 +72,7 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(InvokeVirtual s)
-  {
+  public void visit(InvokeVirtual s) {
     emit(s.dst + " = " + s.obj);
     emit("->vptr->" + s.f + "(" + s.obj);
     for (Operand.T x : s.args) {
@@ -85,8 +84,7 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(Lt s)
-  {
+  public void visit(Lt s) {
     emit(s.dst + " = ");
     s.left.accept(this);
     emit(" < ");
@@ -96,8 +94,7 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(Move s)
-  {
+  public void visit(Move s) {
     emit(s.dst + " = ");
     s.src.accept(this);
     emit(";");
@@ -105,16 +102,38 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(NewObject s)
-  {
-    emit(s.dst + " = ((struct " + s.c + "*)(Tiger_new (&" + s.c
-        + "_vtable_, sizeof(struct " + s.c + "))));");
+  public void visit(ArraySelect s) {
+    s.array.accept(this);
+    emit("[");
+    s.index.accept(this);
+    emit("];");
+  }
+
+  @Override
+  public void visit(And s) {
+    emit(s.dst + " = ");
+    s.left.accept(this);
+    emit(" && ");
+    s.right.accept(this);
+    emit(";");
     return;
   }
 
   @Override
-  public void visit(Print s)
-  {
+  public void visit(NewIntArray s) {
+    emit(s.dst + "= (int*)(Tiger_new_array(");
+    s.len.accept(this);
+    emit("));");
+  }
+
+  @Override
+  public void visit(NewObject s) {
+    emit(s.dst + " = ((struct " + s.c + "*)(Tiger_new (&" + s.c + "_vtable_, sizeof(struct " + s.c + "))));");
+    return;
+  }
+
+  @Override
+  public void visit(Print s) {
     emit("System_out_println (");
     s.arg.accept(this);
     emit(");");
@@ -122,8 +141,7 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(Sub s)
-  {
+  public void visit(Sub s) {
     emit(s.dst + " = ");
     s.left.accept(this);
     emit(" - ");
@@ -133,8 +151,7 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(Times s)
-  {
+  public void visit(Times s) {
     emit(s.dst + " = ");
     s.left.accept(this);
     emit(" * ");
@@ -143,10 +160,32 @@ public class VisualVisitor implements Visitor
     return;
   }
 
+  @Override
+  public void visit(Length s) {
+    s.array.accept(this);
+    emit(".length");
+
+  }
+
+  @Override
+  public void visit(Not s) {
+    emit("!");
+    s.src.accept(this);
+    emit(";");
+  }
+
+  @Override
+  public void visit(MoveArray s) {
+    emit(s.dst + "[");
+    s.index.accept(this);
+    emit("] = ");
+    s.src.accept(this);
+    emit(";");
+  }
+
   // transfer
   @Override
-  public void visit(If s)
-  {
+  public void visit(If s) {
     emit("if (");
     s.operand.accept(this);
     emit(")\n");
@@ -157,55 +196,53 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(Goto s)
-  {
+  public void visit(Goto s) {
     emit("goto " + s.label.toString() + ";\n");
     return;
   }
 
   @Override
-  public void visit(Return s)
-  {
-
+  public void visit(Return s) {
+    emit("return ");
+    s.operand.accept(this);
+    emit(";\n");
     return;
   }
 
   // type
   @Override
-  public void visit(ClassType t)
-  {
+  public void visit(ClassType t) {
     emit("struct " + t.id + " *");
   }
 
   @Override
-  public void visit(IntType t)
-  {
+  public void visit(IntType t) {
+    emit("int ");
   }
 
   @Override
-  public void visit(IntArrayType t)
-  {
+  public void visit(IntArrayType t) {
+    emit("int[] ");
   }
 
   // dec
   @Override
-  public void visit(DecSingle d)
-  {
+  public void visit(DecSingle d) {
+    d.type.accept(this);
+    emit(d.id + ";");
     return;
   }
 
   // dec
   @Override
-  public void visit(BlockSingle b)
-  {
+  public void visit(BlockSingle b) {
 
     return;
   }
 
   // method
   @Override
-  public void visit(MethodSingle m)
-  {
+  public void visit(MethodSingle m) {
     java.util.HashMap<util.Label, Block.T> map = new HashMap<util.Label, Block.T>();
     for (Block.T block : m.blocks) {
       BlockSingle b = (BlockSingle) block;
@@ -213,8 +250,7 @@ public class VisualVisitor implements Visitor
       map.put(label, b);
     }
 
-    util.Graph<Block.T> graph = new util.Graph<Block.T>(m.classId + "_"
-        + m.id);
+    util.Graph<Block.T> graph = new util.Graph<Block.T>(m.classId + "_" + m.id);
 
     for (Block.T block : m.blocks) {
       graph.addNode(block);
@@ -239,8 +275,7 @@ public class VisualVisitor implements Visitor
   }
 
   @Override
-  public void visit(MainMethodSingle m)
-  {
+  public void visit(MainMethodSingle m) {
     java.util.HashMap<util.Label, Block.T> map = new HashMap<util.Label, Block.T>();
     for (Block.T block : m.blocks) {
       Block.BlockSingle b = (Block.BlockSingle) block;
@@ -274,22 +309,19 @@ public class VisualVisitor implements Visitor
 
   // vtables
   @Override
-  public void visit(VtableSingle v)
-  {
+  public void visit(VtableSingle v) {
     return;
   }
 
   // class
   @Override
-  public void visit(ClassSingle c)
-  {
+  public void visit(ClassSingle c) {
     return;
   }
 
   // program
   @Override
-  public void visit(ProgramSingle p)
-  {
+  public void visit(ProgramSingle p) {
     // we'd like to output to a file, rather than the "stdout".
     for (cfg.Cfg.Method.T m : p.methods) {
       m.accept(this);

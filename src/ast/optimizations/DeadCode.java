@@ -94,6 +94,7 @@ public class DeadCode implements ast.Visitor {
 
     Call cl = new Call(exp, e.id, args, e.lineNum);
     cl.rt = this.type;
+    cl.type = e.type;
     cl.at = at;
     this.exp = cl;
     return;

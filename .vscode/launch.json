@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         
+        
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
@@ -62,8 +63,15 @@
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["-testFac","-dump","C"],
+            "args": ["./test/TestGc.java","-dump","C"],
         },
-        
+        {
+            "type": "java",
+            "name": "Launch Tiger-cfgjpg",
+            "request": "launch",
+            "mainClass": "Tiger",
+            "projectName": "tiger",
+            "args": ["./test/TestGc.java","-visualize","jpg"],
+        },
     ]
 }
