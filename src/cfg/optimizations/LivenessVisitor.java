@@ -69,7 +69,7 @@ public class LivenessVisitor implements cfg.Visitor {
 
   // liveIn, liveOut for transfer
   public HashMap<Transfer.T, HashSet<String>> transferLiveIn;
-  public java.util.HashMap<Transfer.T, java.util.HashSet<String>> transferLiveOut;
+  public HashMap<Transfer.T, HashSet<String>> transferLiveOut;
 
   // As you will walk the tree for many times, so
   // it will be useful to recored which is which:
@@ -216,31 +216,42 @@ public class LivenessVisitor implements cfg.Visitor {
 
   @Override
   public void visit(ArraySelect s) {
+    s.array.accept(this);
+    s.index.accept(this);
 
   }
 
   @Override
   public void visit(And s) {
-
+    this.oneStmKill.add(s.dst);
+    // Invariant: accept() of operand modifies "gen"
+    s.left.accept(this);
+    s.right.accept(this);
+    return;
   }
 
   @Override
   public void visit(NewIntArray s) {
-
+    this.oneStmKill.add(s.dst);
+    s.len.accept(this);
   }
 
   @Override
   public void visit(Length s) {
-
+    s.array.accept(this);
   }
 
   @Override
   public void visit(Not s) {
+    this.oneStmKill.add(s.dst);
+    s.src.accept(this);
 
   }
 
   @Override
   public void visit(MoveArray s) {
+    this.oneStmKill.add(s.dst);
+    s.src.accept(this);
 
   }
 
@@ -330,6 +341,7 @@ public class LivenessVisitor implements cfg.Visitor {
     case StmGenKill:
       calculateStmTransferGenKill(b);
       break;
+
     default:
       // Your code here:
       return;
@@ -351,6 +363,7 @@ public class LivenessVisitor implements cfg.Visitor {
     // For this, you should visit statements and transfers in a
     // block in a reverse order.
     // Your code here:
+    this.kind = Liveness_Kind_t.BlockGenKill;
 
     // Step 3: calculate the "liveIn" and "liveOut" sets for each block
     // Note that to speed up the calculation, you should first
