@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+      
         
         
         {
@@ -71,7 +72,15 @@
             "request": "launch",
             "mainClass": "Tiger",
             "projectName": "tiger",
-            "args": ["./test/TestGc.java","-visualize","jpg"],
+            "args": ["./test/Liveness.java","-visualize","jpg"],
+        },
+          {
+            "type": "java",
+            "name": "Launch Tiger-graph-dot",
+            "request": "launch",
+            "mainClass": "Tiger",
+            "projectName": "tiger",
+            "args": ["-testFac","-visualize","jpg"],
         },
     ]
 }

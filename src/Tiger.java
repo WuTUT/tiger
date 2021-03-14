@@ -215,6 +215,9 @@ public class Tiger {
       cfg.PrettyPrintVisitor ppCfg = new cfg.PrettyPrintVisitor();
       control.CompilerPass ppCfgCodePass = new control.CompilerPass("C code printing", cfgAst, ppCfg);
       ppCfgCodePass.doit();
+      cfg.optimizations.Main cfgOpts = new cfg.optimizations.Main();
+      control.CompilerPass cfgOptPass = new control.CompilerPass("Control-flow graph optimizations", cfgOpts, cfgAst);
+      cfgOptPass.doit();
       break;
     case Dalvik:
       codegen.dalvik.TranslateVisitor transDalvik = new codegen.dalvik.TranslateVisitor();
