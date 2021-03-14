@@ -355,10 +355,42 @@ public class LivenessVisitor implements cfg.Visitor {
       break;
     case BlockGenKill:
       calculateBlkTransferGenKill(b);
+      break;
+    case StmInOut:
+      calculateStmInOut(b);
+      break;
     default:
       // Your code here:
       return;
     }
+  }
+
+  private void calculateStmInOut(BlockSingle b) {
+    HashSet<String> transout = new HashSet<>();
+    transout.addAll(this.blockLiveOut.get(b));
+    this.transferLiveOut.put(b.transfer, transout);
+    HashSet<String> transin = new HashSet<>();
+    transin.addAll(transout);
+    transin.removeAll(this.transferKill.get(b.transfer));
+    transin.addAll(this.transferGen.get(b.transfer));
+    this.transferLiveIn.put(b.transfer, transin);
+
+    HashSet<String> tmp = new HashSet<>();
+    tmp.addAll(transin);
+    for (int i = b.stms.size() - 1; i >= 0; i--) {
+      Stm.T stm = b.stms.get(i);
+      HashSet<String> instm = new HashSet<>();
+      HashSet<String> outstm = new HashSet<>();
+      outstm.addAll(tmp);
+      this.stmLiveOut.put(stm, outstm);
+      instm.addAll(outstm);
+      instm.removeAll(this.stmKill.get(stm));
+      instm.addAll(this.stmGen.get(stm));
+      this.stmLiveIn.put(stm, instm);
+      tmp = new HashSet<>();
+      tmp.addAll(instm);
+    }
+
   }
 
   private void calculateBlkTransferGenKill(BlockSingle b) {
@@ -481,46 +513,53 @@ public class LivenessVisitor implements cfg.Visitor {
           }
         }
       }
-      System.out.println("LOOP============");
+      // System.out.println("LOOP============");
 
       for (Block.T block : m.blocks) {
         BlockSingle b = (Block.BlockSingle) block;
-        // if (control.Control.isTracing("liveness.step3")) {
+        if (control.Control.isTracing("liveness.step3")) {
 
-        System.out.print("\ngen, kill for statement:");
-        System.out.println(b.label.toString());
-        System.out.print("\nin is:");
-        for (String str : this.blockLiveIn.get(b)) {
-          System.out.print(str + ", ");
+          System.out.print("\ngen, kill for statement:");
+          System.out.println(b.label.toString());
+          System.out.print("\nin is:");
+          for (String str : this.blockLiveIn.get(b)) {
+            System.out.print(str + ", ");
+          }
+          System.out.print("\nout is:");
+          for (String str : this.blockLiveOut.get(b)) {
+            System.out.print(str + ", ");
+          }
+          System.out.println();
         }
-        System.out.print("\nout is:");
-        for (String str : this.blockLiveOut.get(b)) {
-          System.out.print(str + ", ");
-        }
-        System.out.println();
-        // }
       }
-      System.out.println("LOOPEND=============");
+      // System.out.println("LOOPEND=============");
     }
-    for (Block.T block : m.blocks) {
-      BlockSingle b = (Block.BlockSingle) block;
-      // if (control.Control.isTracing("liveness.step3")) {
-      System.out.print("\ngen, kill for statement:");
-      System.out.println(b.label.toString());
-      System.out.print("\nin is:");
-      for (String str : this.blockLiveIn.get(b)) {
-        System.out.print(str + ", ");
-      }
-      System.out.print("\nout is:");
-      for (String str : this.blockLiveOut.get(b)) {
-        System.out.print(str + ", ");
-      }
-      // }
-    }
+
     // Step 4: calculate the "liveIn" and "liveOut" sets for each
     // statement and transfer
     // Your code here:
+    this.kind = Liveness_Kind_t.StmInOut;
+    for (Block.T block : m.blocks) {
+      block.accept(this);
+    }
+    for (Block.T block : m.blocks) {
+      BlockSingle b = (Block.BlockSingle) block;
 
+      // if (control.Control.isTracing("liveness.step4")) {
+      for (Stm.T stm : b.stms) {
+        System.out.print("\nin, out for statement:");
+        System.out.println(stm.toString());
+        System.out.print("\nin is:");
+        for (String str : this.stmLiveIn.get(stm)) {
+          System.out.print(str + ", ");
+        }
+        System.out.print("\nout is:");
+        for (String str : this.stmLiveOut.get(stm)) {
+          System.out.print(str + ", ");
+        }
+      }
+
+    }
   }
 
   @Override
